@@ -60,4 +60,5 @@ class GopherServer(object):
                 yield "i", line.replace("\t", "    ")
             yield
             yield "1", "Return home", "", ip, port
+            self.log.error(formatted)
             return
