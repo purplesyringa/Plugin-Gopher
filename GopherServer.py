@@ -53,7 +53,7 @@ class GopherServer(object):
                 yield result
         except Exception as e:
             # Report exceptions as server errors
-            yield "Internal Server Error"
+            yield "i", "Internal Server Error"
             yield
             formatted = traceback.format_exc(e)
             for line in formatted.split("\n"):
