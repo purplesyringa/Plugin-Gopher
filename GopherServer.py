@@ -1,10 +1,12 @@
 from gevent.server import StreamServer
 import logging
+import traceback
 
 class GopherServer(object):
-    def __init__(self, port):
+    def __init__(self, port, handler):
         self.server = StreamServer(("127.0.0.1", port), self._handle)
         self.log = logging.getLogger(__name__)
+        self.handler = handler
     def start(self):
         self.log.debug("Starting GopherServer")
         self.server.start()
@@ -25,14 +27,22 @@ class GopherServer(object):
 
         # Handle data
         try:
-            result = self.handleRequest(data)
-            if result is not None:
-                sock.send(result)
+            for result in self.handleRequest(data):
+                sock.send(result + "\r\n")
+            sock.send(".\r\n")
         finally:
             self.log.debug("Closing connection with %s:%s" % (addr[0], addr[1]))
             sock.close()
 
 
-    def handleRequest(self, data):
-        self.log.debug("Received: %s" % data)
-        return "iHello, world!\r\n.\r\n"
+    def handleRequest(self, path):
+        try:
+            result = self.handler(path)
+        except Exception as e:
+            # Report exceptions as server errors
+            formatted = traceback.format_exc(e)
+            for line in formatted.split("\n"):
+                yield "3%s" % line.replace("\t", "    ")
+            return
+
+        yield "iHello, world!"

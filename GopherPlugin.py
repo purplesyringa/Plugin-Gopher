@@ -1,4 +1,5 @@
 from GopherServer import GopherServer
+from handler import handler
 from Plugin import PluginManager
 
 @PluginManager.afterLoad
@@ -10,7 +11,7 @@ def importPluginnedClasses():
 class UiServer(object):
     def start(self):
         # First, start GopherServer
-        server = GopherServer(port=config.gopher_port)
+        server = GopherServer(port=config.gopher_port, handler=handler)
         server.start()
 
         # Now start UiServer itself
