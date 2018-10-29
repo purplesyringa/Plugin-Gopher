@@ -5,6 +5,7 @@ import traceback
 class GopherServer(object):
     def __init__(self, port, handler):
         self.server = StreamServer(("127.0.0.1", port), self._handle)
+        self.port = port
         self.log = logging.getLogger(__name__)
         self.handler = handler
     def start(self):
@@ -25,9 +26,20 @@ class GopherServer(object):
                 data = data[:data.index("\r\n")]
                 break
 
+        ip = sock.getsockname()[0]
+
         # Handle data
         try:
-            for result in self.handleRequest(data):
+            for result in self.handleRequest(data, ip, self.port):
+                if result is None:
+                    result = []
+                elif not isinstance(result, (list, tuple)):
+                    result = [result]
+                # Join all except the first with TABs
+                if len(result) == 0:
+                    result = "i"
+                else:
+                    result = result[0] + "\t".join(map(str, result[1:]))
                 sock.send(result + "\r\n")
             sock.send(".\r\n")
         finally:
@@ -35,14 +47,17 @@ class GopherServer(object):
             sock.close()
 
 
-    def handleRequest(self, path):
+    def handleRequest(self, path, ip, port):
         try:
-            result = self.handler(path)
+            for result in self.handler(path, ip, port):
+                yield result
         except Exception as e:
             # Report exceptions as server errors
+            yield "Internal Server Error"
+            yield
             formatted = traceback.format_exc(e)
             for line in formatted.split("\n"):
-                yield "3%s" % line.replace("\t", "    ")
+                yield "i", line.replace("\t", "    ")
+            yield
+            yield "1", "Return home", "", ip, port
             return
-
-        yield "iHello, world!"
