@@ -9,7 +9,7 @@ def handler(path, ip, port):
 	search = ""
 	if "/" in path:
 		# We have type and path
-		type, path = path.split("/", 1)
+		_, path = path.split("/", 1)
 	if "/" in path:
 		# We also have search string
 		path, search = path.split("/", 1)
