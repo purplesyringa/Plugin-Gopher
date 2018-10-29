@@ -22,7 +22,7 @@ class UiServer(object):
 class ConfigPlugin(object):
     def createArguments(self):
         group = self.parser.add_argument_group("Gopher plugin")
-        group.add_argument("--gopher_port", help="The port to listen on", default=70, type=int)
+        group.add_argument("--gopher_port", help="The port to listen on", default=7070, type=int)
         group.add_argument("--gopher_max_conn", help="Maximum concurrent connections", default=128, type=int)
 
         return super(ConfigPlugin, self).createArguments()
