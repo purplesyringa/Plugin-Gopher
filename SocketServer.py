@@ -5,11 +5,12 @@ import logging
 class SocketServer(object):
     def __init__(self, port, max_connections):
         self.sock = socket.socket()
-        sock.bind(("", port))
-        sock.listen(max_connections)
+        self.sock.bind(("", port))
+        self.sock.listen(max_connections)
         self.log = logging.getLogger(__name__)
 
     def start(self):
+        self.log.debug("Starting SocketServer")
         gevent.spawn(self._start)
     def _start(self):
         # Accept connections
@@ -36,5 +37,5 @@ class SocketServer(object):
         finally:
             conn.close()
 
-    def onConnection(self, data):
-        raise NotImplementedError("onConnection must be implemented by the server class")
+    def handleRequest(self, data):
+        raise NotImplementedError("handleRequest must be implemented by the server class")
