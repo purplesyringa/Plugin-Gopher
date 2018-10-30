@@ -123,12 +123,12 @@ class GopherHandler(object):
             yield "1", "..", "/%s/%s" % (address, parent)
 
         # First, show directories
-        for filename in dirs:
+        for filename in sorted(dirs):
             abspath = os.path.join(path, filename)
             yield "1", filename, "/%s/%s" % (address, abspath)
 
         # Now show files
-        for filename in files:
+        for filename in sorted(files):
             # HTML/text/binary
             abspath = os.path.join(path, filename)
             try:
