@@ -165,9 +165,15 @@ class GopherHandler(object):
 
 
         if site.storage.isDir(path):
-            # Serve directory
-            for line in self.actionSiteDir(address, path):
-                yield line
+            # TODO: Or when text/any file is served as gophertype 1
+            if site.storage.isFile(os.path.join(path, "gophermap")):
+                # Serve gophermap
+                for line in self.actionSiteGophermap(address, os.path.join(path, "gophermap")):
+                    yield line
+            else:
+                # Serve directory
+                for line in self.actionSiteDir(address, path):
+                    yield line
         elif site.storage.isFile(path):
             # Serve the file
             file = site.storage.open(path)
@@ -269,6 +275,30 @@ class GopherHandler(object):
                             yield "i", row
                         else:
                             yield row
+
+
+    def actionSiteGophermap(self, address, path):
+        site = SiteManager.site_manager.get(address)
+        with site.storage.open(path) as f:
+            for line in f:
+                if line == "":
+                    yield
+                    continue
+
+
+                gophertype = line[0]
+                sections = line[1:].split("\t")
+                if gophertype not in "0123456789ihI":
+                    # Assume plain text if gophertype is invalid
+                    gophertype = "i"
+                    sections = [line]
+
+                title = sections[0] if len(sections) >= 1 else ""
+                location = sections[1] if len(sections) >= 2 else ""
+                host = sections[2] if len(sections) >= 3 else ""
+                port = sections[3] if len(sections) >= 4 else ""
+
+                yield gophertype, title, location, host, port
 
 
     def getContentType(self, file_name, prefix):
