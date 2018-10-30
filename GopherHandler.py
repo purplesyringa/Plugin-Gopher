@@ -6,6 +6,7 @@ from footer import footer
 import os
 import mimetypes
 import string
+import gevent
 
 
 class GopherHandler(object):
@@ -42,6 +43,12 @@ class GopherHandler(object):
             # Homepage
             for line in self.actionHomepage():
                 yield line
+        elif path.startswith("download/"):
+            # Start downloading the file
+            _, gopher_type, address, path = path.split("/", 3)
+
+            for line in self.actionDownload(gopher_type, address, path):
+                yield line
         else:
             # Site directory
             if "/" in path:
@@ -50,7 +57,22 @@ class GopherHandler(object):
                 address, path = path, ""
 
             for line in self.actionSite(address, path):
-                yield line
+                if isinstance(line, (tuple, list)) and line[0].startswith("z"):
+                    # z-link
+                    gopher_type = line[0][1:]
+                    fileaddress, filepath = line[2].strip("/").split("/", 1)
+                    # Check whether the file is downloaded
+                    site = SiteManager.site_manager.get(fileaddress)
+                    if site.storage.isFile(filepath):
+                        # Show direct link
+                        line = list(line)
+                        line[0] = gopher_type
+                        yield line
+                    else:
+                        # Show link to download page
+                        yield "1", line[1], "/" + os.path.join("download", gopher_type, fileaddress, filepath)
+                else:
+                    yield line
 
         # Footer
         if footer != []:
@@ -179,10 +201,17 @@ class GopherHandler(object):
             file = site.storage.open(path)
             raise ServeFile(file)
         else:
-            yield "i", "403 Forbidden"
-            yield "i", "%s is neither directory nor file." % path
-            yield
-            yield "1", "Return home", "/"
+            # Try to download the file
+            result = site.needFile(path, priority=15)
+            if result:
+                # Download complete
+                file = site.storage.open(path)
+                raise ServeFile(file)
+            else:
+                yield "i", "404 File Not Found"
+                yield "i", "Could not find file %s." % path
+                yield
+                yield "1", "Return home", "/"
 
 
     def actionSiteDir(self, address, path):
@@ -304,6 +333,20 @@ class GopherHandler(object):
                 port = sections[3] if len(sections) >= 4 else ""
 
                 yield gophertype, title, location, host, port
+
+
+    def actionDownload(self, gopher_type, address, path):
+        site = SiteManager.site_manager.get(address)
+
+        if site.storage.isFile(path):
+            filename = os.path.basename(path)
+            yield "i", "File is downloaded."
+            yield
+            yield gopher_type, filename, "/%s/%s" % (address, path)
+        else:
+            gevent.spawn(site.needFile, path, priority=15)
+            yield "i", "Downloading file %s." % path
+            yield "i", "Refresh to get the result."
 
 
     def getContentType(self, file_name, prefix):
