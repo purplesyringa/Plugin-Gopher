@@ -49,7 +49,10 @@ class GopherServer(object):
                 if len(line) < 5:
                     line += [ip, self.port]
 
-                line = line[0] + "\t".join(map(str, line[1:]))
+                def encodeStr(s):
+                    return unicode(s).encode("utf8")
+
+                line = line[0] + "\t".join(map(encodeStr, line[1:]))
 
                 sock.send(line + "\r\n")
             sock.send(".\r\n")
