@@ -93,7 +93,10 @@ class GopherHandler(object):
         yield "i", "---------------"
         zerohello_settings = self.getUser().sites[config.homepage].get("settings", {})
         favorites = zerohello_settings.get("favorite_sites", {}).keys()
-        for address in sorted(favorites, key=lambda site: sites[address]):
+        for address in sorted(favorites, key=lambda site: sites.get(address, "")):
+            if address not in sites:
+                # Skip deleted sites
+                continue
             title = sites[address]
             yield "1", title, "/" + address
 
