@@ -64,7 +64,7 @@ class GopherHandler(object):
         zerohello_settings = self.getUser().sites[config.homepage].get("settings", {})
         favorites = zerohello_settings.get("favorite_sites", {}).keys()
         for address in favorites:
-            yield "1", sites.get(address, address), "/" + address, self.ip, self.port
+            yield "1", sites.get(address, address), "/" + address
 
         # Print other sites
         yield
@@ -72,7 +72,7 @@ class GopherHandler(object):
         yield "i", "-----"
         for address in sites.keys():
             if address not in favorites:
-                yield "1", sites.get(address, address), "/" + address, self.ip, self.port
+                yield "1", sites.get(address, address), "/" + address
 
         # Footer
         yield

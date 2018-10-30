@@ -33,13 +33,24 @@ class GopherServer(object):
             for line in self.handleRequest(data, ip, self.port):
                 if line is None:
                     line = []
-                elif not isinstance(line, (list, tuple)):
+                elif isinstance(line, tuple):
+                    line = list(line)
+                elif not isinstance(line, list):
                     line = [line]
-                # Join all except the first with TABs
+
+                # Handle empty lines
                 if len(line) == 0:
-                    line = "i"
-                else:
-                    line = line[0] + "\t".join(map(str, line[1:]))
+                    line = ["i"]
+
+                # Fill till the end
+                while len(line) < 3:
+                    line.append("")
+                # Add IP/port
+                if len(line) < 5:
+                    line += [ip, self.port]
+
+                line = line[0] + "\t".join(map(str, line[1:]))
+
                 sock.send(line + "\r\n")
             sock.send(".\r\n")
         finally:
@@ -59,6 +70,6 @@ class GopherServer(object):
             for line in formatted.split("\n"):
                 yield "i", line.replace("\t", "    ")
             yield
-            yield "1", "Return home", "", ip, port
+            yield "1", "Return home", ""
             self.log.error(formatted)
             return
