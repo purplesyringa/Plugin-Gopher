@@ -53,7 +53,7 @@ class GopherServer(object):
                         line += [ip, self.port]
 
                     def encodeStr(s):
-                        return unicode(s).encode("utf8")
+                        return unicode(s).encode("utf8", "ignore")
 
                     line = encodeStr(line[0]) + "\t".join(map(encodeStr, line[1:]))
 
