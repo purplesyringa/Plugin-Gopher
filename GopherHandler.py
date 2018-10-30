@@ -145,10 +145,10 @@ class GopherHandler(object):
     def actionSite(self, address, path):
         site = SiteManager.site_manager.get(address)
         if not site:
-            yield "i", "404 File Not Found"
-            yield "i", "Site %s is not downloaded." % address
-            yield
-            yield "1", "Return home", "/"
+            gevent.spawn(SiteManager.site_manager.need, address)
+
+            yield "i", "Downloading site..."
+            yield "i", "Refresh to see the result."
             return
 
 
