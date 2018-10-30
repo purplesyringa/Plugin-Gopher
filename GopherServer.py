@@ -79,4 +79,4 @@ class GopherServer(object):
                 yield "i", line.replace("\t", "    ")
                 self.log.error(line)
 
-            yield "1", "Return home", ""
+            yield "1", "Return home", "/"

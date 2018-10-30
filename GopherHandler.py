@@ -32,6 +32,8 @@ class GopherHandler(object):
         if search != "":
             # Search isn't supported
             yield "3", "Search is not supported yet."
+            yield
+            yield "1", "Return home", "/"
             return
 
         if path == "":
@@ -94,34 +96,54 @@ class GopherHandler(object):
         site = SiteManager.site_manager.get(address)
         if not site:
             yield "i", "404 File Not Found"
-            yield
             yield "i", "Site %s is not downloaded." % address
+            yield
+            yield "1", "Return home", "/"
             return
 
+        dirs = []
+        files = []
+
         for filename in site.storage.list(path):
-            # Probably check for dir/file here?
             abspath = os.path.join(path, filename)
             if site.storage.isDir(abspath):
                 # Directory
-                yield "1", filename, "/%s/%s" % (address, abspath)
+                dirs.append(filename)
             elif site.storage.isFile(abspath):
-                # HTML/text/binary
-                try:
-                    with site.storage.open(abspath) as f:
-                        prefix = f.read(512)
-                    mime = self.getContentType(filename, prefix)
-                except:
-                    mime = "application/octet-stream"
+                # File
+                files.append(filename)
 
-                if mime == "text/html":
-                    yield "h", filename, "/%s/%s" % (address, abspath)
-                elif mime.startswith("text/") or mime in ("application/json",):
-                    yield "0", filename, "/%s/%s" % (address, abspath)
-                else:
-                    yield "9", filename, "/%s/%s" % (address, abspath)
+        # ..
+        if path == "":
+            yield "1", "..", "/"
+        elif "/" not in path:
+            yield "1", "..", "/%s" % address
+        else:
+            parent, _ = path.rsplit("/", 1)
+            yield "1", "..", "/%s/%s" % (address, parent)
+
+        # First, show directories
+        for filename in dirs:
+            abspath = os.path.join(path, filename)
+            yield "1", filename, "/%s/%s" % (address, abspath)
+
+        # Now show files
+        for filename in files:
+            # HTML/text/binary
+            abspath = os.path.join(path, filename)
+            try:
+                with site.storage.open(abspath) as f:
+                    prefix = f.read(512)
+                mime = self.getContentType(filename, prefix)
+            except:
+                mime = "application/octet-stream"
+
+            if mime == "text/html":
+                yield "h", filename, "/%s/%s" % (address, abspath)
+            elif mime.startswith("text/") or mime in ("application/json",):
+                yield "0", filename, "/%s/%s" % (address, abspath)
             else:
-                # Neither directory nor file
-                yield "1", filename + " [???]", "/%s/%s" % (address, abspath)
+                yield "9", filename, "/%s/%s" % (address, abspath)
 
 
     def getContentType(self, file_name, prefix):
