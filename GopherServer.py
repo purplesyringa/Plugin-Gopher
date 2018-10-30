@@ -65,7 +65,7 @@ class GopherServer(object):
                 while True:
                     buf = file.read(1024)
                     if buf == "":
-                        brak
+                        break
                     sock.send(buf)
         finally:
             self.log.debug("Closing connection with %s:%s" % (addr[0], addr[1]))
