@@ -163,6 +163,10 @@ class GopherHandler(object):
                 yield "h", filename, "/%s/%s" % (address, abspath)
             elif mime.startswith("text/") or mime in ("application/json", "application/javascript"):
                 yield "0", filename, "/%s/%s" % (address, abspath)
+            elif mime == "image/gif":
+                yield "g", filename, "/%s/%s" % (address, abspath)
+            elif mime.startswith("image/"):
+                yield "I", filename, "/%s/%s" % (address, abspath)
             else:
                 yield "9", filename, "/%s/%s" % (address, abspath)
 
