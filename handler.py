@@ -34,4 +34,4 @@ def handler(path, ip, port):
 				# Fallback to address
 				title = address
 
-			yield "1", title, address, ip, port
+			yield "1", title, "/" + address, ip, port
