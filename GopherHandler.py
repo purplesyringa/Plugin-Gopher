@@ -63,6 +63,8 @@ class GopherHandler(object):
 
         # Get site info
         sites = {}
+        merged_types = {}
+        is_merged = {}
         for address, site in SiteManager.site_manager.sites.iteritems():
             # Try to get site title
             try:
@@ -73,7 +75,14 @@ class GopherHandler(object):
                 title = title.replace("\n", " ")
                 sites[address] = title
             except:
-                pass
+                sites[address] = address
+
+            if "merged_type" in content_json:
+                merged_type = content_json["merged_type"]
+                if merged_type not in merged_types:
+                    merged_types[merged_type] = []
+                merged_types[merged_type].append(address)
+                is_merged[address] = True
 
         # Print favorited sites
         yield
@@ -81,16 +90,28 @@ class GopherHandler(object):
         yield "i", "---------------"
         zerohello_settings = self.getUser().sites[config.homepage].get("settings", {})
         favorites = zerohello_settings.get("favorite_sites", {}).keys()
-        for address in favorites:
-            yield "1", sites.get(address, address), "/" + address
+        for address in sorted(favorites, key=lambda site: sites[address]):
+            title = sites[address]
+            yield "1", title, "/" + address
 
         # Print other sites
         yield
-        yield "i", "Sites"
-        yield "i", "-----"
-        for address in sites.keys():
-            if address not in favorites:
-                yield "1", sites.get(address, address), "/" + address
+        yield "i", "Connected sites"
+        yield "i", "---------------"
+        for address in sorted(sites.keys(), key=lambda address: sites[address]):
+            if address not in favorites and not is_merged.get(address):
+                title = sites[address]
+                yield "1", title, "/" + address
+        
+        # Print hubs
+        for merged_type, merged_sites in merged_types.iteritems():
+            header = "Merged: %s" % merged_type
+            yield
+            yield "i", header
+            yield "i", "-" * len(header)
+            for address in sorted(merged_sites, key=lambda address: sites[address]):
+                title = sites[address]
+                yield "1", title, "/" + address
 
 
     def actionSite(self, address, path):
