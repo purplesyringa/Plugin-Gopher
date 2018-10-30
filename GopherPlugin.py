@@ -1,18 +1,17 @@
-from GopherServer import GopherServer
 from Plugin import PluginManager
 
 @PluginManager.afterLoad
 def importPluginnedClasses():
     from Config import config
-    from handler import handler  # Imports pluginnable SiteManager
+    from GopherServer import GopherServer
 
-    global config, handler
+    global config, GopherServer
 
 @PluginManager.registerTo("UiServer")
 class UiServer(object):
     def start(self):
         # First, start GopherServer
-        server = GopherServer(port=config.gopher_port, handler=handler)
+        server = GopherServer(port=config.gopher_port)
         server.start()
 
         # Now start UiServer itself

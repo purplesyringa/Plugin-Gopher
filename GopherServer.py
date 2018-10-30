@@ -1,13 +1,13 @@
 from gevent.server import StreamServer
+from GopherHandler import GopherHandler
 import logging
 import traceback
 
 class GopherServer(object):
-    def __init__(self, port, handler):
+    def __init__(self, port):
         self.server = StreamServer(("127.0.0.1", port), self._handle)
         self.port = port
         self.log = logging.getLogger(__name__)
-        self.handler = handler
     def start(self):
         self.log.debug("Starting GopherServer")
         self.server.start()
@@ -30,17 +30,17 @@ class GopherServer(object):
 
         # Handle data
         try:
-            for result in self.handleRequest(data, ip, self.port):
-                if result is None:
-                    result = []
-                elif not isinstance(result, (list, tuple)):
-                    result = [result]
+            for line in self.handleRequest(data, ip, self.port):
+                if line is None:
+                    line = []
+                elif not isinstance(line, (list, tuple)):
+                    line = [line]
                 # Join all except the first with TABs
-                if len(result) == 0:
-                    result = "i"
+                if len(line) == 0:
+                    line = "i"
                 else:
-                    result = result[0] + "\t".join(map(str, result[1:]))
-                sock.send(result + "\r\n")
+                    line = line[0] + "\t".join(map(str, line[1:]))
+                sock.send(line + "\r\n")
             sock.send(".\r\n")
         finally:
             self.log.debug("Closing connection with %s:%s" % (addr[0], addr[1]))
@@ -49,8 +49,8 @@ class GopherServer(object):
 
     def handleRequest(self, path, ip, port):
         try:
-            for result in self.handler(path, ip, port):
-                yield result
+            for line in GopherHandler(ip, port).route(path):
+                yield line
         except Exception as e:
             # Report exceptions as server errors
             yield "i", "Internal Server Error"
