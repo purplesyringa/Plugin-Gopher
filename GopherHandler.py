@@ -53,6 +53,9 @@ class GopherHandler(object):
             try:
                 content_json = site.content_manager.contents["content.json"]
                 title = content_json["title"]
+                title = title.replace("\t", "    ")  # Fix tabs
+                title = title.replace("\r", " ")  # Fix linebreaks
+                title = title.replace("\n", " ")
                 sites[address] = title
             except:
                 pass
