@@ -241,19 +241,24 @@ class GopherHandler(object):
     def actionSiteRouter(self, site, matches, actions):
         matches["site_address"] = site.address
 
+        def replaceVars(s):
+            for key, value in matches.iteritems():
+                s = s.replace(":%s" % key, value)
+            return s
+
         for action in actions:
             if isinstance(action, list):
                 # We just yield the arrays
                 action = [
                     (
-                        part.replace(":site_address", site.address)
+                        replaceVars(part)
                         if isinstance(part, (str, unicode)) else part
                     ) for part in action
                 ]
                 yield action
             elif isinstance(action, (str, unicode)):
                 # Treat strings as info
-                yield "i", action.replace("\t", "    ").replace(":site_address", site.address)
+                yield "i", replaceVars(action.replace("\t", "    "))
             elif isinstance(action, dict):
                 # Handle specific keys
                 if "break" in action:
@@ -261,11 +266,11 @@ class GopherHandler(object):
                 elif "include" in action:
                     # Switch to another rule/address and then return back
                     for line in self.route(action["redirect"]):
-                        yield line.replace(":site_address", site.address)
+                        yield replaceVars(line)
                 elif "redirect" in action:
                     # Switch to another rule/address (same as include + break)
                     for line in self.route(action["redirect"]):
-                        yield line.replace(":site_address", site.address)
+                        yield replaceVars(line)
                     return
                 elif "sql" in action:
                     # Use each row as an individual line
