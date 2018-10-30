@@ -242,7 +242,7 @@ class GopherHandler(object):
                     ) for part in action
                 ]
                 yield action
-            elif isinstance(action, str):
+            elif isinstance(action, (str, unicode)):
                 # Treat strings as info
                 yield "i", action.replace("\t", "    ").replace(":site_address", site.address)
             elif isinstance(action, dict):
