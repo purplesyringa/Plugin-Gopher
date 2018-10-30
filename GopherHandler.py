@@ -161,7 +161,7 @@ class GopherHandler(object):
 
             if mime == "text/html":
                 yield "h", filename, "/%s/%s" % (address, abspath)
-            elif mime.startswith("text/") or mime in ("application/json",):
+            elif mime.startswith("text/") or mime in ("application/json", "application/javascript"):
                 yield "0", filename, "/%s/%s" % (address, abspath)
             else:
                 yield "9", filename, "/%s/%s" % (address, abspath)
