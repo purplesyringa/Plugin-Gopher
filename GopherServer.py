@@ -55,7 +55,7 @@ class GopherServer(object):
                     def encodeStr(s):
                         return unicode(s).encode("utf8")
 
-                    line = line[0] + "\t".join(map(encodeStr, line[1:]))
+                    line = encodeStr(line[0]) + "\t".join(map(encodeStr, line[1:]))
 
                     sock.send(line + "\r\n")
                 sock.send(".\r\n")
