@@ -2,6 +2,7 @@ from gevent.server import StreamServer
 from GopherHandler import GopherHandler
 import logging
 import traceback
+import sys
 
 class GopherServer(object):
     def __init__(self, port):
@@ -65,14 +66,17 @@ class GopherServer(object):
         try:
             for line in GopherHandler(ip, port).route(path):
                 yield line
-        except Exception as e:
+        except:
             # Report exceptions as server errors
+            e_type, value, tb = sys.exc_info()
+
             yield "i", "Internal Server Error"
             yield
-            formatted = traceback.format_exc(e)
-            for line in formatted.split("\n"):
+
+            # Format exception message and traceback
+            formatted = traceback.format_exception(e_type, value, tb)
+            for line in "".join(formatted).split("\n"):
                 yield "i", line.replace("\t", "    ")
-            yield
+                self.log.error(line)
+
             yield "1", "Return home", ""
-            self.log.error(formatted)
-            return
