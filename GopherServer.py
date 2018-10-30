@@ -1,5 +1,6 @@
 from gevent.server import StreamServer
 from GopherHandler import GopherHandler
+from util import ServeFile
 import logging
 import traceback
 import sys
@@ -31,32 +32,41 @@ class GopherServer(object):
 
         # Handle data
         try:
-            for line in self.handleRequest(data, ip, self.port):
-                if line is None:
-                    line = []
-                elif isinstance(line, tuple):
-                    line = list(line)
-                elif not isinstance(line, list):
-                    line = [line]
+            try:
+                for line in self.handleRequest(data, ip, self.port):
+                    if line is None:
+                        line = []
+                    elif isinstance(line, tuple):
+                        line = list(line)
+                    elif not isinstance(line, list):
+                        line = [line]
 
-                # Handle empty lines
-                if len(line) == 0:
-                    line = ["i"]
+                    # Handle empty lines
+                    if len(line) == 0:
+                        line = ["i"]
 
-                # Fill till the end
-                while len(line) < 3:
-                    line.append("")
-                # Add IP/port
-                if len(line) < 5:
-                    line += [ip, self.port]
+                    # Fill till the end
+                    while len(line) < 3:
+                        line.append("")
+                    # Add IP/port
+                    if len(line) < 5:
+                        line += [ip, self.port]
 
-                def encodeStr(s):
-                    return unicode(s).encode("utf8")
+                    def encodeStr(s):
+                        return unicode(s).encode("utf8")
 
-                line = line[0] + "\t".join(map(encodeStr, line[1:]))
+                    line = line[0] + "\t".join(map(encodeStr, line[1:]))
 
-                sock.send(line + "\r\n")
-            sock.send(".\r\n")
+                    sock.send(line + "\r\n")
+                sock.send(".\r\n")
+            except ServeFile as e:
+                # Pipe file to socket
+                file = e.getServedFile()
+                while True:
+                    buf = file.read(1024)
+                    if buf == "":
+                        brak
+                    sock.send(buf)
         finally:
             self.log.debug("Closing connection with %s:%s" % (addr[0], addr[1]))
             sock.close()
@@ -66,6 +76,8 @@ class GopherServer(object):
         try:
             for line in GopherHandler(ip, port).route(path):
                 yield line
+        except ServeFile:
+            raise
         except:
             # Report exceptions as server errors
             e_type, value, tb = sys.exc_info()

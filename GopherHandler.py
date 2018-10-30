@@ -1,6 +1,7 @@
 from Site import SiteManager
 from User import UserManager
 from Config import config
+from util import ServeFile
 import os
 import mimetypes
 import string
@@ -100,6 +101,26 @@ class GopherHandler(object):
             yield
             yield "1", "Return home", "/"
             return
+
+
+        if site.storage.isDir(path):
+            # Serve directory
+            for line in self.actionSiteDir(address, path):
+                yield line
+        elif site.storage.isFile(path):
+            # Serve the file
+            file = site.storage.open(path)
+            raise ServeFile(file)
+        else:
+            yield "i", "403 Forbidden"
+            yield "i", "%s is neither directory nor file." % path
+            yield
+            yield "1", "Return home", "/"
+
+
+    def actionSiteDir(self, address, path):
+        # Render directory list
+        site = SiteManager.site_manager.get(address)
 
         dirs = []
         files = []
