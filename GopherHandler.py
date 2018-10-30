@@ -2,6 +2,7 @@ from Site import SiteManager
 from User import UserManager
 from Config import config
 from util import ServeFile
+from footer import footer
 import os
 import mimetypes
 import string
@@ -52,9 +53,11 @@ class GopherHandler(object):
                 yield line
 
         # Footer
-        yield
-        yield
-        yield "i", "We believe in open, free, and uncensored network and communication."
+        if footer != []:
+            yield
+            yield
+            for line in footer:
+                yield line
 
 
     def actionHomepage(self):
