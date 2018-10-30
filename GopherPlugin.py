@@ -1,11 +1,12 @@
 from GopherServer import GopherServer
-from handler import handler
 from Plugin import PluginManager
 
 @PluginManager.afterLoad
 def importPluginnedClasses():
     from Config import config
-    global config
+    from handler import handler  # Imports pluginnable SiteManager
+
+    global config, handler
 
 @PluginManager.registerTo("UiServer")
 class UiServer(object):
