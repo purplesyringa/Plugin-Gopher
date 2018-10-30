@@ -127,6 +127,40 @@ class GopherHandler(object):
             return
 
 
+        # Try to route via content.json rules
+        if site.storage.isFile("gopher.json"):
+            rules = site.storage.loadJson("gopher.json")["rules"]
+            split_path = path.split("/")
+            for rule in rules.iterkeys():
+                # a/b/:c/:d/e
+                # "a" is just a match
+                # ":c" means anything, remember to "c" variable
+                split_rule = rule.split("/")
+
+                if len(split_path) != len(split_rule):
+                    # Length mismatch
+                    continue
+
+                matches = {}
+                for i, part in enumerate(split_path):
+                    expected_part = split_rule[i]
+                    if expected_part.startswith(":"):
+                        # Save to variable
+                        matches[expected_part[1:]] = part
+                    elif expected_part == "*":
+                        # Anything
+                        pass
+                    else:
+                        # Full match
+                        if expected_part != part:
+                            break
+                else:
+                    # Matched! Handle the result
+                    for line in self.actionSiteRouter(site, matches, rules[rule]):
+                        yield line
+                    return
+
+
         if site.storage.isDir(path):
             # Serve directory
             for line in self.actionSiteDir(address, path):
@@ -193,6 +227,45 @@ class GopherHandler(object):
                 yield "I", filename, "/%s/%s" % (address, abspath)
             else:
                 yield "9", filename, "/%s/%s" % (address, abspath)
+
+
+    def actionSiteRouter(self, site, matches, actions):
+        matches["site_address"] = site.address
+
+        for action in actions:
+            if isinstance(action, list):
+                # We just yield the arrays
+                action = [
+                    (
+                        part.replace(":site_address", site.address)
+                        if isinstance(part, (str, unicode)) else part
+                    ) for part in action
+                ]
+                yield action
+            elif isinstance(action, str):
+                # Treat strings as info
+                yield "i", action.replace("\t", "    ").replace(":site_address", site.address)
+            elif isinstance(action, dict):
+                # Handle specific keys
+                if "break" in action:
+                    break
+                elif "include" in action:
+                    # Switch to another rule/address and then return back
+                    for line in self.route(action["redirect"]):
+                        yield line.replace(":site_address", site.address)
+                elif "redirect" in action:
+                    # Switch to another rule/address (same as include + break)
+                    for line in self.route(action["redirect"]):
+                        yield line.replace(":site_address", site.address)
+                    return
+                elif "sql" in action:
+                    # Use each row as an individual line
+                    for row in site.storage.query(action["sql"], matches):
+                        row = list(row)
+                        if len(row) == 1:
+                            yield "i", row
+                        else:
+                            yield row
 
 
     def getContentType(self, file_name, prefix):
