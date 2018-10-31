@@ -333,7 +333,7 @@ class GopherHandler(object):
                             yield "i", row
                         else:
                             yield row
-                        
+
                         for additional_row in additionalRows:
                             yield additional_row
 
