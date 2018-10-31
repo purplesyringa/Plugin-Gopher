@@ -154,6 +154,10 @@ class Mark(object):
         return l[::-1]
 class DictMark(Mark):
     pass
+class TupleMark(Mark):
+    pass
+class ListMark(Mark):
+    pass
 
 
 def evaluate_code(expr, scope):
@@ -330,6 +334,20 @@ def evaluate_code(expr, scope):
                             for key, value in zip(d[::2], d[1::2]):
                                 cur_dict[key] = value
                             stack.append(cur_dict)
+                        # Tuples
+                        elif Case("("):
+                            stack.append(TupleMark())
+                        elif Case(")"):
+                            # Build tuple
+                            t = TupleMark.get(stack, SyntaxError("Unmatched ')'"))
+                            stack.append(tuple(t))
+                        # Lists
+                        elif Case("["):
+                            stack.append(ListMark())
+                        elif Case("]"):
+                            # Build list
+                            l = ListMark.get(stack, SyntaxError("Unmatched ']'"))
+                            stack.append(l)
                         else:
                             raise SyntaxError("Function %s is not defined" % token())
 
