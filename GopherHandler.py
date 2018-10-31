@@ -2,7 +2,7 @@ from Site import SiteManager
 from User import UserManager
 from Config import config
 from util import ServeFile
-from evaluate import evaluate
+from evaluate import evaluate, GopherFunction
 from footer import footer
 from Plugin import PluginManager
 import os
@@ -373,7 +373,7 @@ class GopherHandler(object):
                         for line in self.actionSiteRouter(site, row_dict, action["do"]):
                             yield line
                 elif "var" in action:
-                    if "=" in row:
+                    if "=" in action:
                         matches[action["var"]] = replaceVars(action["="])
                     elif "= int" in action:
                         matches[action["var"]] = int(replaceVars(action["= int"]))
@@ -381,6 +381,16 @@ class GopherHandler(object):
                         matches[action["var"]] = float(replaceVars(action["= float"]))
                     elif "= str" in action:
                         matches[action["var"]] = str(replaceVars(action["= str"]))
+                    elif any((key.startswith("= f(") for key in action.iterkeys())):
+                        for key in action.iterkeys():
+                            if key.startswith("= f("):
+                                # Function definition
+                                arg_names = [
+                                    arg.strip().replace(":", "")
+                                    for arg in key.replace("= f(", "")[:-1].split(",")
+                                ]
+                                matches[action["var"]] = GopherFunction(action[key], arg_names)
+                                break
 
 
     def actionSiteGophermap(self, address, path):

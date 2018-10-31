@@ -5,6 +5,11 @@ import re
 
 
 # Builtin functions
+def re_sub(s, p, r):
+    if isinstance(r, GopherFunction):
+        return re.sub(p, lambda match: r(*match.groups()), s)
+    else:
+        return re.sub(p, r, s)
 builtin_functions = {
     "+": lambda a, b: a + b,
     "-": lambda a, b: a - b,
@@ -29,8 +34,21 @@ builtin_functions = {
     "int": lambda a: int(a),
     "parseInt": lambda a, b: int(a, b),
     "float": lambda a: float(a),
-    "re_sub": lambda s, p, r: re.sub(p, r, s)
+    "re_sub": re_sub
 }
+
+
+class GopherFunction(object):
+    def __init__(self, expr, arg_names):
+        self.expr = expr
+        self.arg_names = arg_names
+    def __len__(self):
+        return len(self.arg_names)
+    def __call__(self, *args):
+        scope = {}
+        for i, arg in enumerate(args):
+            scope[self.arg_names[i]] = arg
+        return evaluate(self.expr, scope)
 
 
 def evaluate(expr, scope):
@@ -254,7 +272,17 @@ def evaluate_code(expr, scope):
                     if ret is not None:
                         stack.append(ret)
                 elif token() in scope:
-                    raise SyntaxError("Function %s is not defined, though there is variable :%s. Did you miss ':'?" % (token(), token()))
+                    if isinstance(scope[token()], GopherFunction):
+                        f = scope[token()]
+                        if len(stack) < len(f):
+                            raise SyntaxError("Not enough values in stack during call to :%s: expected at least %s, got %s" % (token(), len(f), len(stack)))
+                        call_args = stack[-len(f):]
+                        stack = stack[:-len(f)]
+                        ret = f(*call_args)
+                        if ret is not None:
+                            stack.append(ret)
+                    else:
+                        raise SyntaxError("Function %s is not defined, though there is variable :%s. Did you miss ':'?" % (token(), token()))
                 else:
                     raise SyntaxError("Function %s is not defined" % token())
 
