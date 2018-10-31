@@ -1,6 +1,7 @@
 from util import Switch
 import inspect
 import builtins
+import re
 
 
 # Builtin functions
@@ -27,7 +28,8 @@ builtin_functions = {
     "len": lambda a: len(a),
     "int": lambda a: int(a),
     "parseInt": lambda a, b: int(a, b),
-    "float": lambda a: float(a)
+    "float": lambda a: float(a),
+    "re_sub": lambda s, p, r: re.sub(p, r, s)
 }
 
 
