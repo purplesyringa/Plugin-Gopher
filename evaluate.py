@@ -30,6 +30,7 @@ builtin_functions = {
     ">=": lambda a, b: a >= b,
     "not": lambda a: not a,
     "^": lambda a, b: a ^ b,
+    "[]": lambda v, i: v[i],
     "len": lambda a: len(a),
     "str": lambda a: str(a),
     "int": lambda a: int(a),
