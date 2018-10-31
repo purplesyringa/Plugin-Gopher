@@ -11,6 +11,7 @@ builtin_functions = {
     "/": lambda a, b: a / b,
     "//": lambda a, b: a // b,
     "%": lambda a, b: a % b,
+    "**": lambda a, b: a ** b,
     "<<": lambda a, b: a << b,
     ">>": lambda a, b: a >> b,
     "&": lambda a, b: a & b,
@@ -74,7 +75,7 @@ def evaluate(expr, scope):
                     current_code += c
             elif Case("string"):
                 # We're inside a string -- wait for end
-                current_code += s
+                current_code += c
                 if c == "\"":
                     # End of string
                     state = "code"
