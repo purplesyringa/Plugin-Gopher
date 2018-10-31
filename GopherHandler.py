@@ -268,7 +268,13 @@ class GopherHandler(object):
 
 
     def actionSiteRouter(self, site, matches, actions):
+        # Expose some site information as variables
         matches["site_address"] = site.address
+        # TODO(Christian): May want to move this somewhere else?
+        content = site.content_manager.contents.get("content.json")
+        matches["site_title"] = content["title"]
+        matches["site_description"] = content["description"]
+        matches["site_peers"] = str(len(site.peers))
 
         def replaceVars(s):
             for key, value in matches.iteritems():
@@ -306,7 +312,7 @@ class GopherHandler(object):
                     for row in site.storage.query(action["sql"], matches):
                         row = list(row)
 
-                        # Handle new lines in the Display Text of the row
+                        # NOTE(Christian): Handle new lines in the Display Text of the row
                         # All new lines after the first will use the text gophertype
                         additionalRows = []
 
