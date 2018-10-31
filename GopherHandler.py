@@ -7,8 +7,10 @@ import os
 import mimetypes
 import string
 import gevent
+from Plugin import PluginManager
 
 
+@PluginManager.acceptPlugins
 class GopherHandler(object):
     def __init__(self, ip, port):
         self.ip = ip
