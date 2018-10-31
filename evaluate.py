@@ -1,7 +1,6 @@
 from gutil import Switch
 from util import SafeRe
 import inspect
-import builtins
 import re
 
 
