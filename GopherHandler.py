@@ -4,11 +4,12 @@ from Config import config
 from util import ServeFile
 from evaluate import evaluate
 from footer import footer
+from Plugin import PluginManager
 import os
 import mimetypes
 import string
 import gevent
-from Plugin import PluginManager
+import re
 
 
 @PluginManager.acceptPlugins
@@ -355,9 +356,21 @@ class GopherHandler(object):
 
                         for additional_row in additionalRows:
                             yield additional_row
-                elif "foreach" in action:
-                    for row in site.storage.query(action["foreach"], matches):
+                elif "sql_foreach" in action:
+                    for row in site.storage.query(action["sql_foreach"], matches):
                         for line in self.actionSiteRouter(site, dict(row), action["do"]):
+                            yield line
+                elif "re_foreach" in action:
+                    # List of actions -- search all matches and execute
+                    pattern = replaceVars(action["re_foreach"])
+                    for row in re.finditer(pattern, replaceVars(action["in"])):
+                        # Match object to dict
+                        row_dict = row.groupdict()
+                        for i, value in enumerate(row.groups()):
+                            row_dict[str(i + 1)] = value
+                        row_dict["0"] = row.group(0)
+                        # Do
+                        for line in self.actionSiteRouter(site, row_dict, action["do"]):
                             yield line
                 elif "var" in action:
                     if "=" in row:
