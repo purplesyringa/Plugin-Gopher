@@ -2,6 +2,7 @@ from Site import SiteManager
 from User import UserManager
 from Config import config
 from util import ServeFile
+from evaluate import evaluate
 from footer import footer
 import os
 import mimetypes
@@ -296,9 +297,7 @@ class GopherHandler(object):
         matches["site_peers"] = str(len(site.peers))
 
         def replaceVars(s):
-            for key, value in matches.iteritems():
-                s = s.replace(":%s" % key, value)
-            return s
+            return evaluate(s, matches)
 
         for action in actions:
             if isinstance(action, list):
