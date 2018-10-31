@@ -50,7 +50,7 @@ class GopherFunction(object):
         scope = {}
         for i, arg in enumerate(args):
             scope[self.arg_names[i]] = arg
-        return evaluate(self.expr, scope)
+        return evaluate_code(self.expr, scope)
 
 
 def evaluate(expr, scope):
@@ -141,12 +141,19 @@ class Function(Token):
 
 
 class Mark(object):
+    begin = SyntaxError("Unmatched begin")
+    end = SyntaxError("Unmatched end")
     @classmethod
     def get(cls, stack):
+        return cls.getMark(stack)[0]
+    @classmethod
+    def getMark(cls, stack):
         l = []
+        mark = None
         while stack:
             value = stack.pop()
             if isinstance(value, cls):
+                mark = value
                 break
             elif isinstance(value, Mark):
                 raise cls.end
@@ -154,7 +161,7 @@ class Mark(object):
                 l.append(value)
         else:
             raise cls.end
-        return l[::-1]
+        return l[::-1], mark
     def unsafe(self):
         raise self.begin
 class DictMark(Mark):
@@ -166,10 +173,18 @@ class TupleMark(Mark):
 class ListMark(Mark):
     begin = SyntaxError("Unmatched '['")
     end = SyntaxError("Unmatched ']'")
+class LambdaMark(Mark):
+    begin = SyntaxError("Unmatched '(...)'")
+    end = SyntaxError("Unmatched ';'")
+    def __init__(self, arg_names):
+        super(LambdaMark, self).__init__()
+        self.arg_names = arg_names
+        self.tokens = []
+    def append(self, token):
+        self.tokens.append(token)
 
 
-def evaluate_code(expr, scope):
-    # First, do tokenization
+def tokenize_code(expr):
     state = "word"
     tokens = []
     current_token = None
@@ -256,12 +271,12 @@ def evaluate_code(expr, scope):
                 else:
                     raise SyntaxError("Expected hexadimical number, got '%s' inside \\x??" % c)
             elif Case("variable"):
-                if c.lower() in "abcdefghijklmnopqrstuvwxyz_":
+                if c.lower() in "abcdefghijklmnopqrstuvwxyz0123456789_":
                     current_token.append(c)
                 else:
                     raise SyntaxError("Expected variable name, got '%s'" % c)
             elif Case("function"):
-                if c.lower() in "abcdefghijklmnopqrstuvwxyz~!@#$%^&*()_+-=?/<>,.\\|":
+                if c.lower() in "abcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=?/<>,.\\|":
                     current_token.append(c)
                 else:
                     raise SyntaxError("Expected function name, got '%s'" % c)
@@ -269,10 +284,37 @@ def evaluate_code(expr, scope):
     if current_token is not None:
         tokens.append(current_token)
 
+    return tokens
+
+
+def evaluate_code(expr, scope):
+    # Tokenize if not tokenized already
+    if isinstance(expr, list):
+        tokens = expr
+    else:
+        tokens = tokenize_code(expr)
 
     stack = []
+    lambda_balance = 0
 
     for token in tokens:
+        if lambda_balance > 0:
+            if isinstance(token, Function) and token() == ";":
+                lambda_balance -= 1
+                if lambda_balance > 0:
+                    # Save
+                    stack[-1].append(token)
+                    continue
+                else:
+                    # Fallthrough -- we handle this case below
+                    pass
+            elif isinstance(token, Function) and token().startswith("("):
+                lambda_balance += 1
+            else:
+                # Save
+                stack[-1].append(token)
+                continue
+
         with Switch(type(token)) as Case:
             if Case(Number):
                 stack.append(token())
@@ -347,7 +389,7 @@ def evaluate_code(expr, scope):
                             stack.append(TupleMark())
                         elif Case(")"):
                             # Build tuple
-                            t = TupleMark.get(stac)
+                            t = TupleMark.get(stack)
                             stack.append(tuple(t))
                         # Lists
                         elif Case("["):
@@ -356,6 +398,16 @@ def evaluate_code(expr, scope):
                             # Build list
                             l = ListMark.get(stack)
                             stack.append(l)
+                        # Lambdas
+                        elif token().startswith("("):
+                            arg_names = token()[1:-1].split(",")
+                            if arg_names == [""]:
+                                arg_names = []
+                            stack.append(LambdaMark(arg_names))
+                            lambda_balance += 1
+                        elif Case(";"):
+                            _, m = LambdaMark.getMark(stack)
+                            stack.append(GopherFunction(m.tokens, m.arg_names))
                         else:
                             raise SyntaxError("Function %s is not defined" % token())
 
