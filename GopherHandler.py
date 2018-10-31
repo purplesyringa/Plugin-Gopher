@@ -297,7 +297,10 @@ class GopherHandler(object):
         matches["site_peers"] = str(len(site.peers))
 
         def replaceVars(s):
-            return evaluate(s, matches)
+            if isinstance(s, (str, unicode)):
+                return evaluate(s, matches)
+            else:
+                return str(s)
 
         for action in actions:
             if isinstance(action, list):
@@ -319,7 +322,7 @@ class GopherHandler(object):
                 elif "include" in action:
                     # Switch to another rule/address and then return back
                     for line in self.route(action["redirect"]):
-                        yield replaceVars(line)
+                        yield line
                 elif "redirect" in action:
                     # Switch to another rule/address (same as include + break)
                     for line in self.route(action["redirect"]):
@@ -352,6 +355,19 @@ class GopherHandler(object):
 
                         for additional_row in additionalRows:
                             yield additional_row
+                elif "foreach" in action:
+                    for row in site.storage.query(action["foreach"], matches):
+                        for line in self.actionSiteRouter(site, dict(row), action["do"]):
+                            yield line
+                elif "var" in action:
+                    if "=" in row:
+                        matches[action["var"]] = replaceVars(action["="])
+                    elif "= int" in action:
+                        matches[action["var"]] = int(replaceVars(action["= int"]))
+                    elif "= float" in action:
+                        matches[action["var"]] = float(replaceVars(action["= float"]))
+                    elif "= str" in action:
+                        matches[action["var"]] = str(replaceVars(action["= str"]))
 
 
     def actionSiteGophermap(self, address, path):
