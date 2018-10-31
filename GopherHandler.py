@@ -34,7 +34,7 @@ class GopherHandler(object):
 
         if search != "":
             # Search isn't supported
-            yield "3", "Search is not supported yet."
+            yield "i", "Search is not supported yet."
             yield
             yield "1", "Return home", "/"
             return
@@ -55,6 +55,19 @@ class GopherHandler(object):
                 address, path = path.split("/", 1)
             else:
                 address, path = path, ""
+
+            if not SiteManager.site_manager.isAddress(address):
+                # Try to route
+                args = path.split("/") if path else []
+                f = getattr(self, "action" + address[0].upper() + address[1:], None)
+                if f:
+                    for line in f(*args):
+                        yield line
+                else:
+                    yield "i", "Unknown remote path /%s" % address
+                    yield
+                    yield "1", "Return home", "/"
+                return
 
             for line in self.actionSite(address, path):
                 if isinstance(line, (tuple, list)) and line[0].startswith("z"):
