@@ -471,4 +471,6 @@ class GopherHandler(object):
                         if arg.strip()
                     ]
                     return GopherFunction(value[key], arg_names)
+                elif key == "= f":
+                    return GopherFunction(value[key], [])
         return None
