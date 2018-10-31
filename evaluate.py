@@ -1,4 +1,5 @@
-from util import Switch
+from gutil import Switch
+from util import SafeRe
 import inspect
 import builtins
 import re
@@ -7,9 +8,9 @@ import re
 # Builtin functions
 def re_sub(s, p, r):
     if isinstance(r, GopherFunction):
-        return re.sub(p, lambda match: r(*match.groups()), s)
+        return SafeRe.sub(p, lambda match: r(*match.groups()), s)
     else:
-        return re.sub(p, r, s)
+        return SafeRe.sub(p, r, s)
 builtin_functions = {
     "+": lambda a, b: a + b,
     "-": lambda a, b: a - b,
@@ -58,7 +59,7 @@ def evaluate(expr, scope):
 
     # Here we only parse the code blocks; we don't parse the code
     # itself. Code parsing is in evaluate_code() function.
-    result = ""
+    result = u""
     state = "text"
     current_code = ""
     for c in expr:
@@ -88,7 +89,7 @@ def evaluate(expr, scope):
                     current_code += "\""
                 elif c == "}":
                     # End of code -- switch back to text
-                    result += str(evaluate_code(current_code, scope))
+                    result += unicode(evaluate_code(current_code, scope))
                     current_code = ""
                     state = "text"
                 else:

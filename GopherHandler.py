@@ -1,15 +1,15 @@
 from Site import SiteManager
 from User import UserManager
 from Config import config
-from util import ServeFile
+from gutil import ServeFile
 from evaluate import evaluate, GopherFunction
 from footer import footer
 from Plugin import PluginManager
+from util import SafeRe
 import os
 import mimetypes
 import string
 import gevent
-import re
 
 
 @PluginManager.acceptPlugins
@@ -363,7 +363,7 @@ class GopherHandler(object):
                 elif "re_foreach" in action:
                     # List of actions -- search all matches and execute
                     pattern = replaceVars(action["re_foreach"])
-                    for row in re.finditer(pattern, replaceVars(action["in"])):
+                    for row in SafeRe.finditer(pattern, replaceVars(action["in"])):
                         # Match object to dict
                         row_dict = row.groupdict()
                         for i, value in enumerate(row.groups()):

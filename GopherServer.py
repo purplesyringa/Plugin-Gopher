@@ -1,6 +1,6 @@
 from gevent.server import StreamServer
 from GopherHandler import GopherHandler
-from util import ServeFile
+from gutil import ServeFile
 import logging
 import traceback
 import sys
