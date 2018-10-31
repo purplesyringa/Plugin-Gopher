@@ -200,7 +200,7 @@ def evaluate_code(expr, scope):
                 else:
                     raise SyntaxError("Expected variable name, got '%s'" % c)
             elif Case("function"):
-                if c.lower() in "abcdefghijklmnopqrstuvwxyz_":
+                if c.lower() in "abcdefghijklmnopqrstuvwxyz~!@#$%^&*()_+-=?/<>,.\\|":
                     current_token.append(c)
                 else:
                     raise SyntaxError("Expected function name, got '%s'" % c)
