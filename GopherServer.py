@@ -78,10 +78,20 @@ class GopherServer(object):
                 yield line
         except ServeFile:
             raise
+        except SyntaxError as e:
+            # Report exceptions as server errors
+            e_type, value, tb = sys.exc_info()
+
+            yield "i", "------------------"
+            yield "i", "Invalid expression"
+            yield "i", e
+            yield
+            yield "1", "Return home", "/"
         except:
             # Report exceptions as server errors
             e_type, value, tb = sys.exc_info()
 
+            yield "i", "---------------------"
             yield "i", "Internal Server Error"
             yield
 
