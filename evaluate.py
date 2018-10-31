@@ -61,6 +61,7 @@ def evaluate(expr, scope):
     result = u""
     state = "text"
     current_code = ""
+    balance = 0
     for c in expr:
         with Switch(state) as Case:
             if Case("text"):
@@ -74,6 +75,7 @@ def evaluate(expr, scope):
                 if c == "{":
                     # Start code
                     current_code = ""
+                    balance = 0
                     state = "code"
                 else:
                     # Fallback
@@ -86,11 +88,18 @@ def evaluate(expr, scope):
                     # String started -- just save it
                     state = "string"
                     current_code += "\""
+                elif c == "{":
+                    balance += 1
+                    current_code += c
                 elif c == "}":
-                    # End of code -- switch back to text
-                    result += unicode(evaluate_code(current_code, scope))
-                    current_code = ""
-                    state = "text"
+                    if balance == 0:
+                        # End of code -- switch back to text
+                        result += unicode(evaluate_code(current_code, scope))
+                        current_code = ""
+                        state = "text"
+                    else:
+                        current_code += c
+                        balance -= 1
                 else:
                     # Just some character
                     current_code += c
@@ -129,6 +138,24 @@ class Function(Token):
     def __call__(self):
         return self.value
 
+
+class Mark(object):
+    @classmethod
+    def get(cls, stack, err):
+        l = []
+        while stack:
+            value = stack.pop()
+            if isinstance(value, cls):
+                break
+            else:
+                l.append(value)
+        else:
+            raise err
+        return l[::-1]
+class DictMark(Mark):
+    pass
+
+
 def evaluate_code(expr, scope):
     # First, do tokenization
     state = "word"
@@ -159,7 +186,7 @@ def evaluate_code(expr, scope):
                     # Variable
                     state = "variable"
                     current_token = Variable()
-                elif c.lower() in "abcdefghijklmnopqrstuvwxyz~!@#$%^&*()_+-=?/<>,.\\|":
+                elif c.lower() in "abcdefghijklmnopqrstuvwxyz~!@#$%^&*()_+-=?/<>,.\\|{}[];:":
                     # Function
                     state = "function"
                     current_token = Function()
@@ -247,6 +274,7 @@ def evaluate_code(expr, scope):
                 else:
                     raise SyntaxError("Variable :%s is not defined" % token())
             elif Case(Function):
+                # Functions
                 if token() in builtin_functions or (
                     token() in scope and
                     not isinstance(scope[token()], GopherFunction) and
@@ -289,7 +317,21 @@ def evaluate_code(expr, scope):
                     else:
                         raise SyntaxError("Function %s is not defined, though there is variable :%s. Did you miss ':'?" % (token(), token()))
                 else:
-                    raise SyntaxError("Function %s is not defined" % token())
+                    with Switch(token()) as Case:
+                        # Dictionaries
+                        if Case("{"):
+                            stack.append(DictMark())
+                        elif Case("}"):
+                            # Build dictionary
+                            d = DictMark.get(stack, SyntaxError("Unmatched '}'"))
+                            if len(d) % 2 != 0:
+                                raise SyntaxError("Expected dictionary; got odd count of values")
+                            cur_dict = {}
+                            for key, value in zip(d[::2], d[1::2]):
+                                cur_dict[key] = value
+                            stack.append(cur_dict)
+                        else:
+                            raise SyntaxError("Function %s is not defined" % token())
 
     if len(stack) == 0:
         raise SyntaxError("Expected expression to return value; stack is empty")
