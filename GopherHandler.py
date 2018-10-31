@@ -297,6 +297,10 @@ class GopherHandler(object):
         matches["site_description"] = content["description"]
         matches["site_peers"] = str(len(site.peers))
 
+        for name, value in site.storage.loadJson("gopher.json").get("global", {}).iteritems():
+            if name not in matches:
+                matches[name] = self.handleGopherDefinition(value, matches)
+
         def replaceVars(s):
             if isinstance(s, (str, unicode)):
                 return evaluate(s, matches)
@@ -373,24 +377,7 @@ class GopherHandler(object):
                         for line in self.actionSiteRouter(site, row_dict, action["do"]):
                             yield line
                 elif "var" in action:
-                    if "=" in action:
-                        matches[action["var"]] = replaceVars(action["="])
-                    elif "= int" in action:
-                        matches[action["var"]] = int(replaceVars(action["= int"]))
-                    elif "= float" in action:
-                        matches[action["var"]] = float(replaceVars(action["= float"]))
-                    elif "= str" in action:
-                        matches[action["var"]] = str(replaceVars(action["= str"]))
-                    elif any((key.startswith("= f(") for key in action.iterkeys())):
-                        for key in action.iterkeys():
-                            if key.startswith("= f("):
-                                # Function definition
-                                arg_names = [
-                                    arg.strip().replace(":", "")
-                                    for arg in key.replace("= f(", "")[:-1].split(",")
-                                ]
-                                matches[action["var"]] = GopherFunction(action[key], arg_names)
-                                break
+                    matches[action["var"]] = self.handleGopherDefinition(action, matches)
 
 
     def actionSiteGophermap(self, address, path):
@@ -457,3 +444,30 @@ class GopherHandler(object):
             return "application/octet-stream"
         else:
             return "text/plain"
+    
+
+    def handleGopherDefinition(self, value, matches):
+        def replaceVars(s):
+            if isinstance(s, (str, unicode)):
+                return evaluate(s, matches)
+            else:
+                return str(s)
+
+        if "=" in value:
+            return replaceVars(value["="])
+        elif "= int" in value:
+            return replaceVars(int(value["= int"]))
+        elif "= float" in value:
+            return replaceVars(float(value["= float"]))
+        elif "= str" in value:
+            return replaceVars(str(value["= str"]))
+        elif any((key.startswith("= f(") for key in value.iterkeys())):
+            for key in value.iterkeys():
+                if key.startswith("= f("):
+                    # Function definition
+                    arg_names = [
+                        arg.strip().replace(":", "")
+                        for arg in key.replace("= f(", "")[:-1].split(",")
+                    ]
+                    return GopherFunction(value[key], arg_names)
+        return None
