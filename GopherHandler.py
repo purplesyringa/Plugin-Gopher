@@ -47,9 +47,6 @@ class GopherHandler(object):
             # Homepage
             for line in self.actionHomepage():
                 yield line
-        elif path == "Stats":
-            for line in self.actionStats():
-                yield line
         elif path.startswith("download/"):
             # Start downloading the file
             _, gopher_type, address, path = path.split("/", 3)
@@ -147,10 +144,6 @@ class GopherHandler(object):
             for address in sorted(merged_sites, key=lambda address: sites[address]):
                 title = sites[address]
                 yield "1", title, "/" + address
-
-
-    def actionStats(self):
-        yield "i", 
 
 
     def actionSite(self, address, path):
