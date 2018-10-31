@@ -31,6 +31,7 @@ builtin_functions = {
     "not": lambda a: not a,
     "^": lambda a, b: a ^ b,
     "len": lambda a: len(a),
+    "str": lambda a: str(a),
     "int": lambda a: int(a),
     "parseInt": lambda a, b: int(a, b),
     "float": lambda a: float(a),
