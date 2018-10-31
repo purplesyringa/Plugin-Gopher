@@ -468,6 +468,7 @@ class GopherHandler(object):
                     arg_names = [
                         arg.strip().replace(":", "")
                         for arg in key.replace("= f(", "")[:-1].split(",")
+                        if arg.strip()
                     ]
                     return GopherFunction(value[key], arg_names)
         return None
