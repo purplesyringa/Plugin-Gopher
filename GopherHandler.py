@@ -327,24 +327,22 @@ class GopherHandler(object):
                         # All new lines after the first will use the text gophertype
                         additionalRows = []
 
-                        title_index = 1 if len(row) > 1 else 0 # Can either be index 0 or 1 depending on if a gophertype is specified
-                        text = row[title_index].replace("\r", "")
+                        if len(row) == 1:
+                            row = ["i"] + row
+                        text = row[1].replace("\r", "")
                         location = row[2] if len(row) >= 3 else ""
                         host = row[3] if len(row) >= 4 else ""
                         port = row[4] if len(row) >= 5 else ""
 
                         part_lines = text.split("\n")
-                        row[title_index] = part_lines[0]
+                        row[1] = part_lines[0]
 
                         for line in part_lines[1:]:
                             additionalRows.append(["i", line, location, host, port])
 
                         # Yield the row and any additional rows due to new lines
-                        if len(row) == 1:
-                            yield "i", row
-                        else:
-                            yield row
-                        
+                        yield row
+
                         for additional_row in additionalRows:
                             yield additional_row
 
