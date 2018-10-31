@@ -39,7 +39,7 @@ class GopherHandler(object):
             yield "1", "Return home", "/"
             return
 
-        if "../" in path or "./" in path:
+        if "../" in path or "./" in path or path.endswith("/..") or path.endswith("/.") or path == ".." or path == ".":
             yield "3", "Invalid path"
             return
 
