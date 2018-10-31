@@ -124,6 +124,7 @@ def evaluate_code(expr, scope):
                     # Function
                     state = "function"
                     current_token = Function()
+                    current_token.append(c)
                 else:
                     raise SyntaxError("Unexpected '%s'" % c)
             elif Case("number"):
