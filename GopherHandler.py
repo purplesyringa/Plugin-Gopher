@@ -301,6 +301,21 @@ class GopherHandler(object):
             if name not in matches:
                 matches[name] = self.handleGopherDefinition(value, matches)
 
+        if "sql_prepared" not in matches:
+            def doSqlPrepared(query, matches):
+                rows = []
+                for row in site.storage.query(query, matches):
+                    rows.append(dict(row))
+                return rows
+            matches["sql_prepared"] = doSqlPrepared
+        if "sql" not in matches:
+            def doSql(query):
+                rows = []
+                for row in site.storage.query(query):
+                    rows.append(dict(row))
+                return rows
+            matches["sql"] = doSql
+
         def replaceVars(s):
             if isinstance(s, (str, unicode)):
                 return evaluate(s, matches)

@@ -247,8 +247,12 @@ def evaluate_code(expr, scope):
                 else:
                     raise SyntaxError("Variable :%s is not defined" % token())
             elif Case(Function):
-                if token() in builtin_functions:
-                    f = builtin_functions[token()]
+                if token() in builtin_functions or (
+                    token() in scope and
+                    not isinstance(scope[token()], GopherFunction) and
+                    callable(scope[token()])
+                ):
+                    f = builtin_functions.get(token(), scope.get(token()))
                     # Get argument count
                     args, varargs, _, _ = inspect.getargspec(f)
                     if varargs is None:
