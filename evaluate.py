@@ -141,23 +141,30 @@ class Function(Token):
 
 class Mark(object):
     @classmethod
-    def get(cls, stack, err):
+    def get(cls, stack):
         l = []
         while stack:
             value = stack.pop()
             if isinstance(value, cls):
                 break
+            elif isinstance(value, Mark):
+                raise cls.end
             else:
                 l.append(value)
         else:
-            raise err
+            raise cls.end
         return l[::-1]
+    def unsafe(self):
+        raise self.begin
 class DictMark(Mark):
-    pass
+    begin = SyntaxError("Unmatched '{'")
+    end = SyntaxError("Unmatched '}'")
 class TupleMark(Mark):
-    pass
+    begin = SyntaxError("Unmatched '('")
+    end = SyntaxError("Unmatched ')'")
 class ListMark(Mark):
-    pass
+    begin = SyntaxError("Unmatched '['")
+    end = SyntaxError("Unmatched ']'")
 
 
 def evaluate_code(expr, scope):
@@ -291,18 +298,18 @@ def evaluate_code(expr, scope):
                         # Simple case
                         if len(stack) < len(args):
                             raise SyntaxError("Not enough values in stack during call to %s: expected at least %s, got %s" % (token(), len(args), len(stack)))
-                        call_args = stack[-len(args):]
+                        call_args = safeList(stack[-len(args):])
                         stack = stack[:-len(args)]
                     else:
                         # Get count from stack head
                         if len(stack) < 1:
                             raise SyntaxError("Expected count value in stack during call to %s; stack is empty" % token())
-                        vararg_cnt = stack.pop()
+                        vararg_cnt = safePop(stack)
                         if not isinstance(vararg_cnt, int):
                             raise SyntaxError("Expected count value in stack during call to %s; got %r" % (token(), vararg_cnt))
                         if len(stack) < vararg_cnt:
                             raise SyntaxError("Not enough values in stack during call to %s: specified %s, got %s" % (token(), vararg_cnt, len(stack)))
-                        call_args = stack[-len(args):]
+                        call_args = safeList(stack[-len(args):])
                         stack = stack[:-len(args)]
                     # Call
                     ret = f(*call_args)
@@ -327,7 +334,7 @@ def evaluate_code(expr, scope):
                             stack.append(DictMark())
                         elif Case("}"):
                             # Build dictionary
-                            d = DictMark.get(stack, SyntaxError("Unmatched '}'"))
+                            d = DictMark.get(stack)
                             if len(d) % 2 != 0:
                                 raise SyntaxError("Expected dictionary; got odd count of values")
                             cur_dict = {}
@@ -339,20 +346,33 @@ def evaluate_code(expr, scope):
                             stack.append(TupleMark())
                         elif Case(")"):
                             # Build tuple
-                            t = TupleMark.get(stack, SyntaxError("Unmatched ')'"))
+                            t = TupleMark.get(stac)
                             stack.append(tuple(t))
                         # Lists
                         elif Case("["):
                             stack.append(ListMark())
                         elif Case("]"):
                             # Build list
-                            l = ListMark.get(stack, SyntaxError("Unmatched ']'"))
+                            l = ListMark.get(stack)
                             stack.append(l)
                         else:
                             raise SyntaxError("Function %s is not defined" % token())
 
     if len(stack) == 0:
         raise SyntaxError("Expected expression to return value; stack is empty")
-    elif len(stack) > 1:
+
+    # Check for Mark
+    safeList(stack)
+    if len(stack) > 1:
         raise SyntaxError("Expected expression to return value; got %s values" % len(stack))
     return stack[0]
+
+
+# Raise error if value is Mark (or contains Mark)
+def safePop(stack):
+    return safeList([stack.pop()])[0]
+def safeList(l):
+    for val in l:
+        if isinstance(val, Mark):
+            val.unsafe()
+    return l
