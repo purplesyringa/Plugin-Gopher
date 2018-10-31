@@ -1,15 +1,32 @@
 from util import Switch
 import inspect
+import builtins
 
 
-# Builtins
-def repeat(s, cnt):
-    return s * cnt
-def add(a, b):
-    return a + b
-builtins = {
-    "repeat": repeat,
-    "add": add
+# Builtin functions
+builtin_functions = {
+    "+": lambda a, b: a + b,
+    "-": lambda a, b: a - b,
+    "*": lambda a, b: a * b,
+    "/": lambda a, b: a / b,
+    "//": lambda a, b: a // b,
+    "%": lambda a, b: a % b,
+    "<<": lambda a, b: a << b,
+    ">>": lambda a, b: a >> b,
+    "&": lambda a, b: a & b,
+    "|": lambda a, b: a | b,
+    "==": lambda a, b: a == b,
+    "!=": lambda a, b: a != b,
+    "<": lambda a, b: a < b,
+    ">": lambda a, b: a > b,
+    "<=": lambda a, b: a <= b,
+    ">=": lambda a, b: a >= b,
+    "not": lambda a: not a,
+    "^": lambda a, b: a ^ b,
+    "len": lambda a: len(a),
+    "int": lambda a: int(a),
+    "parseInt": lambda a, b: int(a, b),
+    "float": lambda a: float(a)
 }
 
 
@@ -120,7 +137,7 @@ def evaluate_code(expr, scope):
                     # Variable
                     state = "variable"
                     current_token = Variable()
-                elif c.lower() in "abcdefghijklmnopqrstuvwxyz":
+                elif c.lower() in "abcdefghijklmnopqrstuvwxyz~!@#$%^&*()_+-=?/<>,.\\|":
                     # Function
                     state = "function"
                     current_token = Function()
@@ -203,13 +220,13 @@ def evaluate_code(expr, scope):
             elif Case(Variable):
                 if token() in scope:
                     stack.append(scope[token()])
-                elif token() in builtins:
+                elif token() in builtin_functions:
                     raise SyntaxError("Variable :%s is not defined, though there is builtin function %s. Did you accidentally press ':'?" % (token(), token()))
                 else:
                     raise SyntaxError("Variable :%s is not defined" % token())
             elif Case(Function):
-                if token() in builtins:
-                    f = builtins[token()]
+                if token() in builtin_functions:
+                    f = builtin_functions[token()]
                     # Get argument count
                     args, varargs, _, _ = inspect.getargspec(f)
                     if varargs is None:
