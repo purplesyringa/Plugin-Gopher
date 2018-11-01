@@ -1,4 +1,4 @@
-def format(text, path, gopher_type, ip, port):
+def format(text, path, ip, port):
     gopherText = ""
 
     for line in text.split("\r\n"):
