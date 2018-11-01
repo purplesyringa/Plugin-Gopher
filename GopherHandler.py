@@ -1,11 +1,11 @@
 from Site import SiteManager
 from User import UserManager
 from Config import config
-from gutil import ServeFile
+from gutil import ServeFile, getReSafety
 from evaluate import evaluate, GopherFunction, GasHolder
 from footer import footer
 from Plugin import PluginManager
-from util import SafeRe
+import re
 import os
 import mimetypes
 import string
@@ -412,7 +412,8 @@ class GopherHandler(object):
                     # List of actions -- search all matches and execute
                     self.gas_holder.needGas(3)
                     pattern = replaceVars(action["re_foreach"])
-                    for row in SafeRe.finditer(pattern, replaceVars(action["in"])):
+                    self.gas_holder.needGas(getReSafety(pattern))
+                    for row in re.finditer(pattern, replaceVars(action["in"])):
                         # Match object to dict
                         row_dict = row.groupdict()
                         for i, value in enumerate(row.groups()):

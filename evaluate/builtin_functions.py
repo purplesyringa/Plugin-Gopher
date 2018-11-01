@@ -1,13 +1,15 @@
-from util import SafeRe
+from Gopher.gutil import getReSafety
 from eutil import GopherFunction
+import re
 
 
 # Builtin functions
-def re_sub(s, p, r):
+def re_sub(gas_holder, s, p, r):
+    gas_holder.needGas(getReSafety(p))
     if isinstance(r, GopherFunction):
-        return SafeRe.sub(p, lambda match: r(*match.groups()), s)
+        return re.sub(p, lambda match: r(*match.groups()), s)
     else:
-        return SafeRe.sub(p, r, s)
+        return re.sub(p, r, s)
 builtin_functions = {
     "+": lambda a, b: a + b,
     "-": lambda a, b: a - b,

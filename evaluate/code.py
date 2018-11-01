@@ -59,7 +59,7 @@ def evaluate_code(expr, scope, gas_holder):
                     # well.
                     gas_holder.needGas(2)
                     f = builtin_functions.get(token(), scope.get(token()))
-                    executeBuiltinFunction(f, token, stack)
+                    executeBuiltinFunction(f, token, stack, gas_holder)
                 elif token() in scope:
                     # Execute GopherFunction
                     gas_holder.needGas(1)
@@ -138,9 +138,15 @@ def getVariable(scope, token):
     else:
         raise SyntaxError("Variable :%s is not defined" % token())
 
-def executeBuiltinFunction(f, token, stack):
+def executeBuiltinFunction(f, token, stack, gas_holder):
     # Get argument count
     args, varargs, _, _ = inspect.getargspec(f)
+
+    need_gas_holder = False
+    if args != [] and args[0] == "gas_holder":
+        need_gas_holder = True
+        args.pop(0)
+
     if varargs is None:
         # Simple case
         if len(stack) < len(args):
@@ -158,7 +164,10 @@ def executeBuiltinFunction(f, token, stack):
             raise SyntaxError("Not enough values in stack during call to %s: specified %s, got %s" % (token(), vararg_cnt, len(stack)))
         call_args = safeList(stack[-vararg_cnt:])
         del stack[-vararg_cnt:]
+
     # Call
+    if need_gas_holder:
+        call_args.insert(0, gas_holder)
     ret = f(*call_args)
     if ret is not None:
         stack.append(ret)
