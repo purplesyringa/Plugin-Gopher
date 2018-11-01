@@ -27,6 +27,9 @@ def format(text, path, ip, port):
                 gopher_text += u"<img src='/I/gophermedia/web.png'> <a href='%s'>%s</a> &lt;WEB&gt;<br>\n" % (location[4:], title)
             else:
                 gopher_text += u"<img src='/I/gophermedia/dir.png'> <a href='//%s:%s/1%s'>%s/</a><br>\n" % (host, port, location, title)
+        elif gophertype == "7":
+            gopher_text += u"<img src='/I/gophermedia/inp.png'> %s &lt;INP&gt;<br>\n" % title
+            gopher_text += u"<input type='text' id='search_%s' name='search_%s'>" % (title.replace(" ", "_"), title.replace(" ", "_"))
         elif gophertype in "02456789gITs":
             desc = {
                 "0": "TXT",
@@ -34,7 +37,6 @@ def format(text, path, ip, port):
                 "4": "HQC",
                 "5": "DOS",
                 "6": "UUE",
-                "7": "INP",
                 "8": "TLN",
                 "9": "BIN",
                 "g": "GIF",
