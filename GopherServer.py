@@ -21,6 +21,7 @@ class GopherServer(object):
 
         f = sock.makefile()
         first_line = f.readline().rstrip("\r\n")
+        gopher_type = "1"  # Assume directory by default
         if first_line.startswith("GET "):
             # Seems like HTTP
             # Read until we get an empty line
@@ -32,6 +33,10 @@ class GopherServer(object):
             first_line = first_line[4:]
             if first_line.endswith(" HTTP/1.1"):
                 first_line = first_line[:-len(" HTTP/1.1")]
+            if first_line and first_line[0] in "0123456789ihI":
+                # Valid gopher type
+                gopher_type = first_line[0]
+                first_line = first_line[1:]
             is_http = True
         else:
             is_http = False
@@ -40,7 +45,7 @@ class GopherServer(object):
         # Handle data
         try:
             if is_http:
-                gen = self.handleRequestHTTP(first_line, ip)
+                gen = self.handleRequestHTTP(first_line, ip, gopher_type)
             else:
                 gen = self.handleRequestGopher(first_line, ip)
 
@@ -98,16 +103,16 @@ class GopherServer(object):
                 yield buf
 
 
-    def handleRequestHTTP(self, data, ip):
+    def handleRequestHTTP(self, path, ip, gopher_type):
         try:
             gopher_text = ""
-            for part in self.formatGopher(data, ip):
+            for part in self.formatGopher(path, ip):
                 gopher_text += part
-            response = HTTPGopherProxy.format(gopher_text)
+            content_type, response = HTTPGopherProxy.format(gopher_text, path, gopher_type, ip, self.port)
             # Yield header
             yield "HTTP/1.1 200 OK\r\n"
             yield "Server: Gopher/ZeroNet\r\n"
-            yield "Content-Type: text/html\r\n"
+            yield "Content-Type: %s\r\n" % content_type
             yield "Content-Length: %s\r\n" % len(response)
             yield "Connection: Closed\r\n"
             yield "\r\n"
