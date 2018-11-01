@@ -27,13 +27,13 @@ class GopherHandler(object):
 
     def route(self, path):
         path = path.replace("\\", "/")  # Fix gopher-client bug
-        path = path.strip("/")
 
         # Defaults:
         search = ""
         if "\t" in path:
             # Search string
             path, search = path.split("\t", 1)
+        path = path.strip("/")
 
         if "../" in path or "./" in path or path.endswith("/..") or path.endswith("/.") or path == ".." or path == ".":
             yield "3", "Invalid path"
