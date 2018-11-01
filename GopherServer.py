@@ -39,6 +39,8 @@ class GopherServer(object):
                 # Valid gopher type
                 gopher_type = first_line[0]
                 first_line = first_line[1:]
+            # Transform search to gopher://-compatible format
+            first_line = first_line.replace("?search=", "\t")
             first_line = urllib.unquote(first_line)
             is_http = True
         else:
