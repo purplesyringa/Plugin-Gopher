@@ -29,7 +29,7 @@ def format(text, path, ip, port):
         elif gophertype == "I":
             gopherText += "<a href='//%s:%s/I%s'>%s</a> &lt;IMG&gt;<br>\n" % (host, port, location, title)
         elif gophertype == "h":
-            gopherText += "<a href='//%s:%s%s'>%s</a> &lt;HTML&gt;<br>\n" % (host, zn_ui_port, location, title)
+            gopherText += "<a href='//%s:%s/h%s'>%s</a> &lt;HTML&gt; <strong>(No sandbox)</strong><br>\n" % (host, port, location, title)
         else:
             gopherText += "%s<br>\n" % line
 
