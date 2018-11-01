@@ -1,7 +1,23 @@
+class GasHolder(object):
+    def __init__(self, gas):
+        self.__gas = gas
+    def needGas(self, cnt):
+        if self.__gas < cnt:
+            raise SyntaxError("Out of gas")
+        self.__gas -= cnt
+    def addGas(self, cnt):
+        self.__gas += cnt
+    def getGas(self):
+        return self.__gas
+    def setGas(self, gas):
+        self.__gas = gas
+
+
 class GopherFunction(object):
-    def __init__(self, expr, arg_names):
+    def __init__(self, expr, arg_names, gas_holder):
         self.expr = expr
         self.arg_names = arg_names
+        self.gas_holder = gas_holder
     def __len__(self):
         return len(self.arg_names)
     def __call__(self, *args):
@@ -9,7 +25,7 @@ class GopherFunction(object):
         scope = {}
         for i, arg in enumerate(args):
             scope[self.arg_names[i]] = arg
-        return code.evaluate_code(self.expr, scope)
+        return code.evaluate_code(self.expr, scope, self.gas_holder)
 
 
 class Token(object):

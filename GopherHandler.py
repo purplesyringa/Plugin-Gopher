@@ -2,7 +2,7 @@ from Site import SiteManager
 from User import UserManager
 from Config import config
 from gutil import ServeFile
-from evaluate import evaluate, GopherFunction
+from evaluate import evaluate, GopherFunction, GasHolder
 from footer import footer
 from Plugin import PluginManager
 from util import SafeRe
@@ -40,6 +40,7 @@ class GopherHandler(object):
         self.ip = ip
         self.port = port
         self._user = None
+        self.gas_holder = GasHolder(config.gopher_gas)
 
     def getUser(self):
         if not self._user:
@@ -340,13 +341,14 @@ class GopherHandler(object):
 
         def replaceVars(s):
             if isinstance(s, (str, unicode)):
-                return evaluate(s, matches)
+                return evaluate(s, matches, self.gas_holder)
             else:
                 return str(s)
 
         for action in actions:
             if isinstance(action, list):
                 # We just yield the arrays
+                self.gas_holder.needGas(1)
                 action = [
                     (
                         replaceVars(part)
@@ -356,6 +358,7 @@ class GopherHandler(object):
                 yield action
             elif isinstance(action, (str, unicode)):
                 # Treat strings as info
+                self.gas_holder.needGas(1)
                 yield "i", replaceVars(action.replace("\t", "    "))
             elif isinstance(action, dict):
                 # Handle specific keys
@@ -363,15 +366,18 @@ class GopherHandler(object):
                     break
                 elif "include" in action:
                     # Switch to another rule/address and then return back
+                    self.gas_holder.needGas(1)
                     for line in self.route(action["redirect"]):
                         yield line
                 elif "redirect" in action:
                     # Switch to another rule/address (same as include + break)
+                    self.gas_holder.needGas(1)
                     for line in self.route(action["redirect"]):
                         yield replaceVars(line)
-                    return
+                    break
                 elif "sql" in action:
                     # Use each row as an individual line
+                    self.gas_holder.needGas(5)
                     for row in site.storage.query(action["sql"], matches):
                         row = list(row)
 
@@ -398,11 +404,13 @@ class GopherHandler(object):
                         for additional_row in additionalRows:
                             yield additional_row
                 elif "sql_foreach" in action:
+                    self.gas_holder.needGas(7)
                     for row in site.storage.query(action["sql_foreach"], matches):
                         for line in self.actionSiteRouter(site, dict(row), action["do"]):
                             yield line
                 elif "re_foreach" in action:
                     # List of actions -- search all matches and execute
+                    self.gas_holder.needGas(3)
                     pattern = replaceVars(action["re_foreach"])
                     for row in SafeRe.finditer(pattern, replaceVars(action["in"])):
                         # Match object to dict
@@ -414,6 +422,7 @@ class GopherHandler(object):
                         for line in self.actionSiteRouter(site, row_dict, action["do"]):
                             yield line
                 elif "var" in action:
+                    self.gas_holder.needGas(1)
                     matches[action["var"]] = self.handleGopherDefinition(action, matches)
 
 
@@ -486,7 +495,7 @@ class GopherHandler(object):
     def handleGopherDefinition(self, value, matches):
         def replaceVars(s):
             if isinstance(s, (str, unicode)):
-                return evaluate(s, matches)
+                return evaluate(s, matches, self.gas_holder)
             else:
                 return str(s)
 

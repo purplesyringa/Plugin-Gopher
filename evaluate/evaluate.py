@@ -2,7 +2,7 @@ from Gopher.gutil import Switch
 from code import evaluate_code
 
 
-def evaluate(expr, scope):
+def evaluate(expr, scope, gas_holder):
     # scope is a dict of variables
     # expr is a string we want to evaluate
 
@@ -44,7 +44,7 @@ def evaluate(expr, scope):
                 elif c == "}":
                     if balance == 0:
                         # End of code -- switch back to text
-                        result += unicode(evaluate_code(current_code, scope))
+                        result += unicode(evaluate_code(current_code, scope, gas_holder))
                         current_code = ""
                         state = "text"
                     else:

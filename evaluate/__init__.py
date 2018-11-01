@@ -1,2 +1,2 @@
 from evaluate import evaluate
-from eutil import GopherFunction
+from eutil import GopherFunction, GasHolder

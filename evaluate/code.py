@@ -5,7 +5,7 @@ from eutil import *
 import inspect
 
 
-def evaluate_code(expr, scope):
+def evaluate_code(expr, scope, gas_holder):
     # Tokenize if not tokenized already
     if isinstance(expr, list):
         tokens = expr
@@ -38,10 +38,13 @@ def evaluate_code(expr, scope):
         with Switch(type(token)) as Case:
             # Push numbers, strings onto stack
             if Case(Number):
+                gas_holder.needGas(1)
                 stack.append(token())
             elif Case(String):
+                gas_holder.needGas(1)
                 stack.append(token())
             elif Case(Variable):
+                gas_holder.needGas(1)
                 stack.append(getVariable(scope, token))
             elif Case(Function):
                 # Functions
@@ -54,10 +57,12 @@ def evaluate_code(expr, scope):
                     # are in `scope`, not `builtin_functions` if they are
                     # dependent on context, so we need to check `scope` as
                     # well.
+                    gas_holder.needGas(2)
                     f = builtin_functions.get(token(), scope.get(token()))
                     executeBuiltinFunction(f, token, stack)
                 elif token() in scope:
                     # Execute GopherFunction
+                    gas_holder.needGas(1)
                     if isinstance(scope[token()], GopherFunction):
                         f = scope[token()]
                         executeGopherFunction(f, token, stack)
@@ -68,9 +73,11 @@ def evaluate_code(expr, scope):
                     with Switch(token()) as Case:
                         # Dictionaries
                         if Case("{"):
+                            gas_holder.needGas(1)
                             stack.append(DictMark())
                         elif Case("}"):
                             # Build dictionary
+                            gas_holder.needGas(1)
                             d = DictMark.get(stack)
                             if len(d) % 2 != 0:
                                 raise SyntaxError("Expected dictionary; got odd count of values")
@@ -80,28 +87,34 @@ def evaluate_code(expr, scope):
                             stack.append(cur_dict)
                         # Tuples
                         elif Case("("):
+                            gas_holder.needGas(1)
                             stack.append(TupleMark())
                         elif Case(")"):
                             # Build tuple
+                            gas_holder.needGas(1)
                             t = TupleMark.get(stack)
                             stack.append(tuple(t))
                         # Lists
                         elif Case("["):
+                            gas_holder.needGas(1)
                             stack.append(ListMark())
                         elif Case("]"):
                             # Build list
+                            gas_holder.needGas(1)
                             l = ListMark.get(stack)
                             stack.append(l)
                         # Lambdas
                         elif token().startswith("f("):
+                            gas_holder.needGas(1)
                             arg_names = token()[2:-1].split(",")
                             if arg_names == [""]:
                                 arg_names = []
                             stack.append(LambdaMark(arg_names))
                             lambda_balance += 1
                         elif Case(";"):
+                            gas_holder.needGas(1)
                             _, m = LambdaMark.getMark(stack)
-                            stack.append(GopherFunction(m.tokens, m.arg_names))
+                            stack.append(GopherFunction(m.tokens, m.arg_names, gas_holder))
                         else:
                             raise SyntaxError("Function %s is not defined" % token())
 
