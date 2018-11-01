@@ -484,7 +484,7 @@ class GopherHandler(object):
                         for arg in key.replace("= f(", "")[:-1].split(",")
                         if arg.strip()
                     ]
-                    return GopherFunction(value[key], arg_names)
+                    return GopherFunction(value[key], arg_names, self.gas_holder)
                 elif key == "= f":
-                    return GopherFunction(value[key], [])
+                    return GopherFunction(value[key], [], self.gas_holder)
         return None
