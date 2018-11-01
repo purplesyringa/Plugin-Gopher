@@ -15,6 +15,10 @@ def re_sub(gas_holder, s, p, r):
 def random_str(len):
     chars = string.ascii_lowercase + string.digits
     return "".join(random.choice(chars) for _ in range(size))
+def setitem(v, i, a):
+    v[i] = a
+def delitem(v, i):
+    del v[i]
 builtin_functions = {
     "+": lambda a, b: a + b,
     "-": lambda a, b: a - b,
@@ -36,6 +40,8 @@ builtin_functions = {
     "not": lambda a: not a,
     "^": lambda a, b: a ^ b,
     "[]": lambda v, i: v[i],
+    "[]=": setitem,
+    "del[]": delitem,
     "len": lambda a: len(a),
     "str": lambda a: str(a),
     "int": lambda a: int(a),
