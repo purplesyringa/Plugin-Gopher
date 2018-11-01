@@ -3,12 +3,18 @@ import string
 
 
 class ServeFile(Exception):
-    def __init__(self, file):
-        super(ServeFile, self).__init__("Serving file %r" % file)
+    def __init__(self, file, filename, filesize):
+        super(ServeFile, self).__init__("Serving file %s (%sb)" % (filename, filesize))
         self.__file = file
+        self.__filename = filename
+        self.__filesize = filesize
 
     def getServedFile(self):
         return self.__file
+    def getServedFilename(self):
+        return self.__filename
+    def getServedFilesize(self):
+        return self.__filesize
 
 
 class Switch(object):

@@ -238,22 +238,19 @@ class GopherHandler(object):
                 # Serve directory
                 for line in self.actionSiteDir(address, path):
                     yield line
-        elif site.storage.isFile(path):
+        else:
+            if not site.storage.isFile(path):
+                # Try to download the file
+                if not site.needFile(path, priority=15):
+                    yield "i", "404 File Not Found"
+                    yield "i", "Could not find file %s." % path
+                    yield
+                    yield "1", "Return home", "/"
+                    return
             # Serve the file
             file = site.storage.open(path)
-            raise ServeFile(file)
-        else:
-            # Try to download the file
-            result = site.needFile(path, priority=15)
-            if result:
-                # Download complete
-                file = site.storage.open(path)
-                raise ServeFile(file)
-            else:
-                yield "i", "404 File Not Found"
-                yield "i", "Could not find file %s." % path
-                yield
-                yield "1", "Return home", "/"
+            size = site.storage.getSize(path)
+            raise ServeFile(file, os.path.basename(path), size)
 
 
     def actionSiteDir(self, address, path):
