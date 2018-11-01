@@ -33,6 +33,7 @@ class GopherServer(object):
             first_line = first_line[4:]
             if first_line.endswith(" HTTP/1.1"):
                 first_line = first_line[:-len(" HTTP/1.1")]
+            first_line = first_line.lstrip("/")
             if first_line and first_line[0] in "0123456789ihI":
                 # Valid gopher type
                 gopher_type = first_line[0]
@@ -108,7 +109,22 @@ class GopherServer(object):
             gopher_text = ""
             for part in self.formatGopher(path, ip):
                 gopher_text += part
-            content_type, response = HTTPGopherProxy.format(gopher_text, path, gopher_type, ip, self.port)
+            if gopher_type == "0":
+                content_type, response = "text/plain", gopher_text
+            elif gopher_type == "4":
+                content_type, response = "application/mac-binhex", gopher_text
+            elif gopher_type == "5":
+                content_type, response = "application/zip", gopher_text
+            elif gopher_type == "6":
+                content_type, response = "text/x-uuencode", gopher_text
+            elif gopher_type in "9I":
+                content_type, response = "application/octet-stream", gopher_text
+            elif gopher_type == "h":
+                content_type, response = "text/html", gopher_text
+            elif gopher_type == "g":
+                content_type, response = "image/gif", gopher_text
+            else:
+                content_type, response = HTTPGopherProxy.format(gopher_text, path, ip, self.port)
             # Yield header
             yield "HTTP/1.1 200 OK\r\n"
             yield "Server: Gopher/ZeroNet\r\n"
