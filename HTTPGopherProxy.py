@@ -2,16 +2,14 @@ def format(text, path, gopher_type, ip, port):
     gopherText = ""
 
     for line in text.split("\r\n"):
-        if line == "":
+        if line == "" or line == ".":
             continue
         gophertype = line[0]
-        if gophertype == ".\r\n":
-            continue
         parts = line[1:].split('\t')
 
         title = parts[0] if len(parts) >= 1 else ""
-        title = title.replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;").replace("<", "&lt;").replace(">", "&gt;")
-        
+        title = title.replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("\\", "\\\\")
+
         location = parts[1] if len(parts) >= 2 else ""
         host = parts[2] if len(parts) >= 3 else ip
         port = parts[3] if len(parts) >= 4 else port
@@ -26,6 +24,8 @@ def format(text, path, gopher_type, ip, port):
             gopherText += "<a href='//%s:%s%s'>%s</a> &lt;BIN&gt;<br>\n" % (host, "43110", location, title)
         elif gophertype == "I":
             gopherText += "<a href='//%s:%s%s'>%s</a> &lt;IMG&gt;<br>\n" % (host, "43110", location, title)
+        elif gophertype == "h":
+            gopherText += "<a href='//%s:%s%s'>%s</a> &lt;HTML&gt;<br>\n" % (host, "43110", location, title)
         else:
             gopherText += "%s<br>\n" % line
 
