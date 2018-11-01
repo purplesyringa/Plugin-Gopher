@@ -12,6 +12,19 @@ import string
 import gevent
 
 
+@PluginManager.registerTo("UiRequest")
+class UiRequestPlugin(object):
+    def actionGopher(self):
+        from Ui import UiRequest
+
+        self.sendHeader()
+        yield "<h3>Gopher Web Client</h3>"
+        yield "<p>%s</p>" % (self.get["path"] if self.get.get("path") else "/1/")
+        yield "<hr>"
+        yield
+
+
+
 @PluginManager.acceptPlugins
 class GopherHandler(object):
     def __init__(self, ip, port):
