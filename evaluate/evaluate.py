@@ -32,12 +32,16 @@ def evaluate(expr, scope, gas_holder):
                     result += "$" + c
                     state = "text"
             elif Case("code"):
-                # Here, we'll only check quotes ("), and not really parse
+                # Here, we'll only check quotes ("/`), and not really parse
                 # the code.
                 if c == "\"":
                     # String started -- just save it
                     state = "string"
                     current_code += "\""
+                elif c == "`":
+                    # Raw string started -- just save it
+                    state = "raw_string"
+                    current_code += "`"
                 elif c == "{":
                     balance += 1
                     current_code += c
@@ -56,12 +60,25 @@ def evaluate(expr, scope, gas_holder):
             elif Case("string"):
                 # We're inside a string -- wait for end
                 current_code += c
-                if c == "\"":
+                if c == "\\":
+                    # Escape character
+                    state = "string_escape"
+                elif c == "\"":
                     # End of string
+                    state = "code"
+            elif Case("string_escape"):
+                # We're inside a string escape
+                current_code += c
+                state = "string"
+            elif Case("raw_string"):
+                # We're inside a raw string -- wait for end
+                current_code += c
+                if c == "`":
+                    # End of raw string
                     state = "code"
 
     # Now check whether the code is correct
-    if state == "string":
+    if state in ("string", "string_escape", "raw_string"):
         raise SyntaxError("Unterminated string literal")
     elif state == "code":
         raise SyntaxError("Unterminated code block")

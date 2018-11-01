@@ -25,7 +25,11 @@ def tokenize_code(expr):
                     # A string
                     state = "string"
                     current_token = String()
-                elif c in "'`":
+                elif c == "`":
+                    # A raw string
+                    state = "raw_string"
+                    current_token = String()
+                elif c == "'":
                     raise SyntaxError("Unexpected '%s'. Did you mean '\"'?" % c)
                 elif c == ":":
                     # Variable
@@ -88,6 +92,13 @@ def tokenize_code(expr):
                     tmp = None
                 else:
                     raise SyntaxError("Expected hexadimical number, got '%s' inside \\x??" % c)
+            elif Case("raw_string"):
+                if c == "`":
+                    tokens.append(current_token)
+                    current_token = None
+                    state = "string_space"
+                else:
+                    current_token.append(c)
             elif Case("variable"):
                 if c.lower() in "abcdefghijklmnopqrstuvwxyz0123456789_":
                     current_token.append(c)
