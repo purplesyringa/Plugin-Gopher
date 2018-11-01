@@ -460,3 +460,14 @@ class GopherHandler(object):
                 elif key == "= f":
                     return GopherFunction(value[key], [], self.gas_holder)
         return None
+
+
+    def actionGophermedia(self, *path):
+        curdir = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(curdir, "media", *path)
+        try:
+            f = open(path, "rb")
+        except IOError:
+            yield "i", "IOError"
+            return
+        raise ServeFile(f, os.path.basename(path), os.path.getsize(path))
