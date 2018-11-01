@@ -18,7 +18,7 @@ class UiRequestPlugin(object):
     def actionGopher(self):
         from Ui import UiRequest
 
-        self.sendHeader();
+        self.sendHeader()
         yield "<h3>Gopher ZeroNet Plugin</h3>"
         yield "<hr>"
 
