@@ -1,16 +1,16 @@
 from Gopher.gutil import Switch
 from builtin_functions import builtin_functions
-from tokenize import tokenize_code
+from tokenize import tokenizeCode
 from eutil import *
 import inspect
 
 
-def evaluate_code(expr, scope, gas_holder):
+def evaluateCode(expr, scope, gas_holder):
     # Tokenize if not tokenized already
     if isinstance(expr, list):
         tokens = expr
     else:
-        tokens = tokenize_code(expr)
+        tokens = tokenizeCode(expr)
 
     stack = []
     lambda_balance = 0

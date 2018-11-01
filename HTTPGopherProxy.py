@@ -1,36 +1,33 @@
-def format(text):
+def format(text, path, gopher_type, ip, port):
     gopherText = ""
 
-    return """
-        Welcome to HTTP Gopher proxy!
-        <hr>
-        <pre>
-        %s
-        </pre>
-        <hr>
-        See you later!
-    """ % text
-
-    for line in text.split():
+    for line in text.split("\r\n"):
+        if line == "":
+            gopherText += "[EmptyLine]<br>"
+            continue
         gophertype = line[0]
+        if gophertype == ".":
+            continue
         parts = line[1:].split('\t')
 
         title = parts[0] if len(parts) >= 1 else ""
         location = parts[1] if len(parts) >= 2 else ""
-        host = parts[2] if len(parts) >= 3 else ""
-        port = parts[3] if len(parts) >= 4 else ""
+        host = parts[2] if len(parts) >= 3 else ip
+        port = parts[3] if len(parts) >= 4 else port
 
         if gophertype == "i":
             gopherText += "%s<br>\n" % title
         elif gophertype == "1":
-            gopherText += "<a href=''>%s/ - %s %s<br>\n" % (title, host, port)
+            gopherText += "<a href='//%s:%s%s'>%s/</a><br>\n" % (host, port, location, title)
         else:
             gopherText += "%s<br>\n" % line
 
-    return """
+    return "text/html", """
 Welcome to HTTP Gopher proxy!
 <hr>
+<pre>
 %s
+</pre>
 <hr>
 See you later!
     """ % gopherText

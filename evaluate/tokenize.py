@@ -2,7 +2,7 @@ from Gopher.gutil import Switch
 from eutil import Number, String, Variable, Function
 
 
-def tokenize_code(expr):
+def tokenizeCode(expr):
     state = "word"
     tokens = []
     current_token = None

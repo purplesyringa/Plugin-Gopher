@@ -1,5 +1,5 @@
 from Gopher.gutil import Switch
-from code import evaluate_code
+from code import evaluateCode
 
 
 def evaluate(expr, scope, gas_holder):
@@ -7,7 +7,7 @@ def evaluate(expr, scope, gas_holder):
     # expr is a string we want to evaluate
 
     # Here we only parse the code blocks; we don't parse the code
-    # itself. Code parsing is in evaluate_code() function.
+    # itself. Code parsing is in evaluateCode() function.
     result = u""
     state = "text"
     current_code = ""
@@ -48,7 +48,7 @@ def evaluate(expr, scope, gas_holder):
                 elif c == "}":
                     if balance == 0:
                         # End of code -- switch back to text
-                        result += unicode(evaluate_code(current_code, scope, gas_holder))
+                        result += unicode(evaluateCode(current_code, scope, gas_holder))
                         current_code = ""
                         state = "text"
                     else:
