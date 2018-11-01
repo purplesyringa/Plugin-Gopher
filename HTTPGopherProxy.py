@@ -17,15 +17,15 @@ def format(text, path, gopher_type, ip, port):
         if gophertype == "i":
             gopherText += "%s<br>\n" % title
         elif gophertype == "0":
-            gopherText += "<a href='//%s:%s%s'>%s</a> &lt;TXT&gt;<br>\n" % (host, port, location, title)
+            gopherText += "<a href='//%s:%s/0%s'>%s</a> &lt;TXT&gt;<br>\n" % (host, port, location, title)
         elif gophertype == "1":
-            gopherText += "<a href='//%s:%s%s'>%s/</a><br>\n" % (host, port, location, title)
+            gopherText += "<a href='//%s:%s/1%s'>%s/</a><br>\n" % (host, port, location, title)
         elif gophertype == "9":
-            gopherText += "<a href='//%s:%s%s'>%s</a> &lt;BIN&gt;<br>\n" % (host, port, location, title)
+            gopherText += "<a href='//%s:%s/9%s'>%s</a> &lt;BIN&gt;<br>\n" % (host, port, location, title)
         elif gophertype == "I":
-            gopherText += "<a href='//%s:%s%s'>%s</a> &lt;IMG&gt;<br>\n" % (host, port, location, title)
+            gopherText += "<a href='//%s:%s/I%s'>%s</a> &lt;IMG&gt;<br>\n" % (host, port, location, title)
         elif gophertype == "h":
-            gopherText += "<a href='//%s:%s%s'>%s</a> &lt;HTML&gt;<br>\n" % (host, port, location, title)
+            gopherText += "<a href='//%s:%s/h%s'>%s</a> &lt;HTML&gt;<br>\n" % (host, port, location, title)
         else:
             gopherText += "%s<br>\n" % line
 
