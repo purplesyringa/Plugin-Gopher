@@ -21,7 +21,7 @@ def format(text, path, ip, port):
         if gophertype == "i":
             gopherText += "%s<br>\n" % title
         elif gophertype == "3":
-            gopherText += "<strong>ERR</strong> <em>%s</em><br>\n" % title
+            gopherText += "<strong>ERR</strong> <em style='color: red'>%s</em><br>\n" % title
         elif gophertype == "0":
             gopherText += "<a href='//%s:%s/0%s'>%s</a> &lt;TXT&gt;<br>\n" % (host, port, location, title)
         elif gophertype == "1":
@@ -30,7 +30,7 @@ def format(text, path, ip, port):
             else:
                 gopherText += "<a href='//%s:%s/1%s'>%s/</a><br>\n" % (host, port, location, title)
         elif gophertype == "2":
-            gopherText += "<a href='//%s:%s/2%s'>%s</a> &lt;CSCO&gt;<br>\n" % (host, port, location, title)
+            gopherText += "<a href='//%s:%s/2%s'>%s</a> &lt;CCSO&gt;<br>\n" % (host, port, location, title)
         elif gophertype == "4":
             gopherText += "<a href='//%s:%s/4%s'>%s</a> &lt;HQC&gt;<br>\n" % (host, port, location, title)
         elif gophertype == "5":
