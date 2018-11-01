@@ -1,3 +1,7 @@
+import mimetypes
+import string
+
+
 class ServeFile(Exception):
     def __init__(self, file):
         super(ServeFile, self).__init__("Serving file %r" % file)
@@ -30,3 +34,31 @@ def getReSafety(pattern):
         ) * 2 +
         (pattern.count(".*") - pattern.count(".{") - pattern.count(".+"))
     )
+
+
+def getContentType(self, file_name, prefix):
+    if file_name.endswith(".css"):  # Force correct css content type
+        return "text/css"
+    content_type = mimetypes.guess_type(file_name)[0]
+    if content_type:
+        return content_type.lower()
+
+    # Try to guess (thanks to Thomas)
+    # https://stackoverflow.com/a/1446870/5417677
+    text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
+    null_trans = string.maketrans("", "")
+    if not prefix:
+        # Empty files are considered text
+        return "text/plain"
+    if "\0" in prefix:
+        # Files with null bytes are likely binary
+        return "application/octet-stream"
+    # Get the non-text characters (maps a character to itself then
+    # use the 'remove' option to get rid of the text characters).
+    non_txt = prefix.translate(null_trans, text_characters)
+    # If more than 30% non-text characters, then
+    # this is considered a binary file
+    if float(len(non_txt)) / float(len(prefix)) > 0.30:
+        return "application/octet-stream"
+    else:
+        return "text/plain"

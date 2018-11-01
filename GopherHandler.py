@@ -1,14 +1,12 @@
 from Site import SiteManager
 from User import UserManager
 from Config import config
-from gutil import ServeFile, getReSafety
+from gutil import ServeFile, getReSafety, getContentType
 from evaluate import evaluate, GopherFunction, GasHolder
 from footer import footer
 from Plugin import PluginManager
 import re
 import os
-import mimetypes
-import string
 import gevent
 
 
@@ -295,7 +293,7 @@ class GopherHandler(object):
             try:
                 with site.storage.open(abspath) as f:
                     prefix = f.read(512)
-                mime = self.getContentType(filename, prefix)
+                mime = getContentType(filename, prefix)
             except:
                 mime = "application/octet-stream"
 
@@ -463,34 +461,6 @@ class GopherHandler(object):
             gevent.spawn(site.needFile, path, priority=15)
             yield "i", "Downloading file %s." % path
             yield "i", "Refresh to get the result."
-
-
-    def getContentType(self, file_name, prefix):
-        if file_name.endswith(".css"):  # Force correct css content type
-            return "text/css"
-        content_type = mimetypes.guess_type(file_name)[0]
-        if content_type:
-            return content_type.lower()
-
-        # Try to guess (thanks to Thomas)
-        # https://stackoverflow.com/a/1446870/5417677
-        text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
-        null_trans = string.maketrans("", "")
-        if not prefix:
-            # Empty files are considered text
-            return "text/plain"
-        if "\0" in prefix:
-            # Files with null bytes are likely binary
-            return "application/octet-stream"
-        # Get the non-text characters (maps a character to itself then
-        # use the 'remove' option to get rid of the text characters).
-        non_txt = prefix.translate(null_trans, text_characters)
-        # If more than 30% non-text characters, then
-        # this is considered a binary file
-        if float(len(non_txt)) / float(len(prefix)) > 0.30:
-            return "application/octet-stream"
-        else:
-            return "text/plain"
     
 
     def handleGopherDefinition(self, value, matches):
