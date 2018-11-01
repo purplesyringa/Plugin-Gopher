@@ -25,7 +25,7 @@ class GopherFunction(object):
         scope = {}
         for i, arg in enumerate(args):
             scope[self.arg_names[i]] = arg
-        return code.evaluate_code(self.expr, scope, self.gas_holder)
+        return code.evaluateCode(self.expr, scope, self.gas_holder)
 
 
 class Token(object):
