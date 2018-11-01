@@ -49,7 +49,7 @@ def format(text, path, ip, port):
             gopher_text += "%s<br>\n" % line
 
     return "text/html", """
-<style>body { line-height: 9px; }</style>
+<link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
 Welcome to HTTP Gopher proxy!
 <hr>
 <pre>
