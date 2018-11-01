@@ -19,22 +19,23 @@ class GopherServer(object):
         self.log.debug("Connection from %s:%s" % (addr[0], addr[1]))
         ip = sock.getsockname()[0]
 
-        with sock.makefile() as f:
-            first_line = f.readline().rstrip("\r\n")
-            if first_line.startswith("GET "):
-                # Seems like HTTP
-                # Read until we get an empty line
-                while True:
-                    line = f.readline().rstrip("\r\n")
-                    if not line:
-                        break
-                # Parse HTTP query
-                first_line = first_line[4:]
-                if first_line.endswith(" HTTP/1.1"):
-                    first_line = first_line[:-len(" HTTP/1.1")]
-                is_http = True
-            else:
-                is_http = False
+        f = sock.makefile()
+        first_line = f.readline().rstrip("\r\n")
+        if first_line.startswith("GET "):
+            # Seems like HTTP
+            # Read until we get an empty line
+            while True:
+                line = f.readline().rstrip("\r\n")
+                if not line:
+                    break
+            # Parse HTTP query
+            first_line = first_line[4:]
+            if first_line.endswith(" HTTP/1.1"):
+                first_line = first_line[:-len(" HTTP/1.1")]
+            is_http = True
+        else:
+            is_http = False
+        f.close()
 
         # Handle data
         try:
