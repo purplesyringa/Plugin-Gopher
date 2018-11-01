@@ -35,7 +35,7 @@ class GopherServer(object):
             if first_line.endswith(" HTTP/1.1"):
                 first_line = first_line[:-len(" HTTP/1.1")]
             first_line = first_line.lstrip("/")
-            if first_line and first_line[0] in "0123456789ihI":
+            if first_line and first_line[0] in "0123456789+:;<IMPTdghips":
                 # Valid gopher type
                 gopher_type = first_line[0]
                 first_line = first_line[1:]

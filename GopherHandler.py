@@ -408,7 +408,7 @@ class GopherHandler(object):
 
                 gophertype = line[0]
                 sections = line[1:].split("\t")
-                if gophertype not in "0123456789ihI":
+                if gophertype not in "0123456789+:;<IMPTdghips":
                     # Assume plain text if gophertype is invalid
                     gophertype = "i"
                     sections = [line]
