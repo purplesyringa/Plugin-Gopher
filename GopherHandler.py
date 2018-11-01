@@ -31,16 +31,9 @@ class GopherHandler(object):
 
         # Defaults:
         search = ""
-        if "%09" in path:
+        if "\t" in path:
             # Search string
-            path, search = path.split("%09", 1)
-
-        if search != "":
-            # Search isn't supported
-            yield "i", "Search is not supported yet."
-            yield
-            yield "1", "Return home", "/"
-            return
+            path, search = path.split("\t", 1)
 
         if "../" in path or "./" in path or path.endswith("/..") or path.endswith("/.") or path == ".." or path == ".":
             yield "3", "Invalid path"
@@ -76,7 +69,7 @@ class GopherHandler(object):
                     yield "1", "Return home", "/"
                 return
 
-            for line in self.actionSite(address, path):
+            for line in self.actionSite(address, path, search):
                 if isinstance(line, (tuple, list)) and line[0].startswith("z"):
                     # z-link
                     gopher_type = line[0][1:]
@@ -162,7 +155,7 @@ class GopherHandler(object):
                 yield "1", title, "/" + address
 
 
-    def actionSite(self, address, path):
+    def actionSite(self, address, path, search):
         site = SiteManager.site_manager.get(address)
         if not site:
             gevent.spawn(SiteManager.site_manager.need, address)
@@ -201,7 +194,7 @@ class GopherHandler(object):
                             break
                 else:
                     # Matched! Handle the result
-                    for line in self.actionSiteRouter(site, matches, rules[rule]):
+                    for line in self.actionSiteRouter(site, matches, search, rules[rule]):
                         yield line
                     return
 
@@ -284,7 +277,7 @@ class GopherHandler(object):
                 yield "9", filename, "/%s/%s" % (address, abspath)
 
 
-    def actionSiteRouter(self, site, matches, actions):
+    def actionSiteRouter(self, site, matches, search, actions):
         # Expose some site information as variables
         matches["site_address"] = site.address
         # TODO(Christian): May want to move this somewhere else?
@@ -292,6 +285,7 @@ class GopherHandler(object):
         matches["site_title"] = content["title"]
         matches["site_description"] = content["description"]
         matches["site_peers"] = str(len(site.peers))
+        matches["search"] = search
 
         for name, value in site.storage.loadJson("gopher.json").get("global", {}).iteritems():
             if name not in matches:
