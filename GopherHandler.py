@@ -2,7 +2,7 @@ from Site import SiteManager
 from User import UserManager
 from Config import config
 from gutil import ServeFile, getReSafety, getContentType
-from evaluate import evaluate, GopherFunction, GasHolder
+from evaluate import evaluate, evaluateCode, GopherFunction, GasHolder
 from footer import footer
 from Plugin import PluginManager
 import re
@@ -392,6 +392,9 @@ class GopherHandler(object):
                 elif "var" in action:
                     self.gas_holder.needGas(1)
                     matches[action["var"]] = self.handleGopherDefinition(action, matches)
+                elif "do" in action:
+                    self.gas_holder.needGas(1)
+                    evaluateCode(action["do"], matches, self.gas_holder, no_result=True)
 
 
     def actionSiteGophermap(self, address, path):

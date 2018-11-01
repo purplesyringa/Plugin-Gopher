@@ -5,7 +5,7 @@ from eutil import *
 import inspect
 
 
-def evaluateCode(expr, scope, gas_holder):
+def evaluateCode(expr, scope, gas_holder, no_result=False):
     # Tokenize if not tokenized already
     if isinstance(expr, list):
         tokens = expr
@@ -118,14 +118,18 @@ def evaluateCode(expr, scope, gas_holder):
                         else:
                             raise SyntaxError("Function %s is not defined" % token())
 
-    if len(stack) == 0:
-        raise SyntaxError("Expected expression to return value; stack is empty")
-
     # Check for Mark
     safeList(stack)
-    if len(stack) > 1:
-        raise SyntaxError("Expected expression to return value; got %s values" % len(stack))
-    return stack[0]
+
+    if not no_result:
+        if len(stack) == 0:
+            raise SyntaxError("Expected expression to return value; stack is empty")
+        elif len(stack) > 1:
+            raise SyntaxError("Expected expression to return value; got %s values" % len(stack))
+        return stack[0]
+    else:
+        if len(stack) > 0:
+            raise SyntaxError("Expected expression to return nothing; got %s values" % len(stack))
 
 
 
