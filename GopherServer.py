@@ -1,5 +1,6 @@
 from gevent.server import StreamServer
 from GopherHandler import GopherHandler
+from HTTPGopherProxy import HTTPGopherProxy
 from gutil import ServeFile
 import logging
 import traceback
@@ -16,59 +17,37 @@ class GopherServer(object):
 
     def _handle(self, sock, addr):
         self.log.debug("Connection from %s:%s" % (addr[0], addr[1]))
-        # Read all the buffer
-        data = ""
-        while True:
-            buf = sock.recv(1024)
-            if not buf:
-                break
-            data += buf
-            if "\r\n" in data:
-                # Request ended
-                data = data[:data.index("\r\n")]
-                break
-
         ip = sock.getsockname()[0]
+
+        with sock.makefile() as f:
+            first_line = f.readline().rstrip("\r\n")
+            if first_line.startswith("GET "):
+                # Seems like HTTP
+                # Read until we get an empty line
+                while True:
+                    line = f.readline().rstrip("\r\n")
+                    if not line:
+                        break
+                # Parse HTTP query
+                first_line = first_line[4:]
+                if first_line.endswith(" HTTP/1.1"):
+                    first_line = first_line[:-len(" HTTP/1.1")]
+                is_http = True
+            else:
+                is_http = False
 
         # Handle data
         try:
-            try:
-                for line in self.handleRequest(data, ip, self.port):
-                    if line is None:
-                        line = []
-                    elif isinstance(line, tuple):
-                        line = list(line)
-                    elif not isinstance(line, list):
-                        line = [line]
+            if is_http:
+                gen = self.handleRequestHTTP(first_line, ip)
+            else:
+                gen = self.handleRequestGopher(first_line, ip)
 
-                    # Handle empty lines
-                    if len(line) == 0:
-                        line = ["i"]
-
-                    # Fill till the end
-                    while len(line) < 3:
-                        line.append("")
-                    # Add IP/port
-                    if len(line) < 5:
-                        line += [ip, self.port]
-
-                    def encodeStr(s):
-                        return unicode(s).encode("utf8", "ignore")
-
-                    line = encodeStr(line[0]) + "\t".join(map(encodeStr, line[1:]))
-
-                    sock.send(line + "\r\n")
-                sock.send(".\r\n")
-            except ServeFile as e:
-                # Pipe file to socket
-                file = e.getServedFile()
-                while True:
-                    buf = file.read(1024)
-                    if buf == "":
-                        break
-                    sock.send(buf)
+            for part in gen:
+                sock.send(part)
         finally:
-            self.log.debug("Closing connection with %s:%s" % (addr[0], addr[1]))
+            protocol = "http://" if is_http else "gopher://"
+            self.log.debug("Closing %s connection with %s:%s" % (protocol, addr[0], addr[1]))
             sock.close()
 
 
@@ -102,3 +81,84 @@ class GopherServer(object):
                 self.log.error(line)
 
             yield "1", "Return home", "/"
+
+
+    def handleRequestGopher(self, data, ip):
+        try:
+            for part in self.formatGopher(data, ip):
+                yield part
+        except ServeFile as e:
+            # Pipe file to socket
+            file = e.getServedFile()
+            while True:
+                buf = file.read(1024)
+                if buf == "":
+                    break
+                yield buf
+
+
+    def handleRequestHTTP(self, data, ip):
+        try:
+            proxy = HTTPGopherProxy()
+            for part in self.formatGopher(data, ip):
+                proxy.append(part)
+            response = proxy.format()
+            # Yield header
+            yield "HTTP/1.1 200 OK\r\n"
+            yield "Server: Gopher/ZeroNet\r\n"
+            yield "Content-Type: text/html\r\n"
+            yield "Content-Length: %s\r\n" % len(response)
+            yield "Connection: Closed\r\n"
+            yield "\r\n"
+            # Yield body
+            yield response
+        except ServeFile as e:
+            # Get file
+            file = e.getServedFile()
+            # Detect mime type
+            prefix = file.read(512)
+            mime_type = getContentType(e.getServedFilename(), prefix)
+            # Yield header
+            yield "HTTP/1.1 200 OK\r\n"
+            yield "Server: Gopher/ZeroNet\r\n"
+            yield "Content-Type: %s\r\n" % mime_type
+            yield "Content-Length: %s\r\n" % len(e.getServedFilesize())
+            yield "Connection: Closed\r\n"
+            yield "\r\n"
+            # Yield prefix
+            yield prefix
+            # Yield rest
+            while True:
+                buf = file.read(1024)
+                if buf == "":
+                    break
+                yield buf
+
+
+    def formatGopher(self, data, ip):
+        for line in self.handleRequest(data, ip, self.port):
+            if line is None:
+                line = []
+            elif isinstance(line, tuple):
+                line = list(line)
+            elif not isinstance(line, list):
+                line = [line]
+
+            # Handle empty lines
+            if len(line) == 0:
+                line = ["i"]
+
+            # Fill till the end
+            while len(line) < 3:
+                line.append("")
+            # Add IP/port
+            if len(line) < 5:
+                line += [ip, self.port]
+
+            def encodeStr(s):
+                return unicode(s).encode("utf8", "ignore")
+
+            line = encodeStr(line[0]) + "\t".join(map(encodeStr, line[1:]))
+
+            yield line + "\r\n"
+        yield ".\r\n"
