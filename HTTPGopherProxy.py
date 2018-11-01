@@ -3,15 +3,15 @@ def format(text, path, ip, port):
 
     zn_ui_port = config.ui_port
 
-    gopher_text = ""
+    gopher_text = u""
 
-    for line in text.split("\r\n"):
+    for line in text.decode("utf8").split("\r\n"):
         if line == "" or line == ".":
             continue
         gophertype = line[0]
         parts = line[1:].split('\t')
 
-        title = parts[0] if len(parts) >= 1 else ""
+        title = parts[0] if len(parts) >= 1 else u""
         title = title.replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("\\", "\\\\")
 
         location = parts[1] if len(parts) >= 2 else ""
@@ -19,14 +19,14 @@ def format(text, path, ip, port):
         port = parts[3] if len(parts) >= 4 else port
 
         if gophertype == "i":
-            gopher_text += "%s<br>\n" % title
+            gopher_text += u"%s<br>\n" % title
         elif gophertype == "3":
-            gopher_text += "<strong>ERR</strong> <em style='color: red'>%s</em><br>\n" % title
+            gopher_text += u"<strong>ERR</strong> <em style='color: red'>%s</em><br>\n" % title
         elif gophertype == "1":
             if location.startswith("URL:") or location.startswith("GET "):
-                gopher_text += "<img src='/I/gophermedia/web.png'> <a href='%s'>%s</a> &lt;WEB&gt;<br>\n" % (location[4:], title)
+                gopher_text += u"<img src='/I/gophermedia/web.png'> <a href='%s'>%s</a> &lt;WEB&gt;<br>\n" % (location[4:], title)
             else:
-                gopher_text += "<img src='/I/gophermedia/dir.png'> <a href='//%s:%s/1%s'>%s/</a><br>\n" % (host, port, location, title)
+                gopher_text += u"<img src='/I/gophermedia/dir.png'> <a href='//%s:%s/1%s'>%s/</a><br>\n" % (host, port, location, title)
         elif gophertype in "02456789gITs":
             desc = {
                 "0": "TXT",
@@ -42,13 +42,13 @@ def format(text, path, ip, port):
                 "T": "3270",
                 "s": "SND"
             }[gophertype]
-            gopher_text += "<img src='/I/gophermedia/%s.png'> <a href='//%s:%s/%s%s'>%s</a> &lt;%s&gt;<br>\n" % (desc.lower(), host, port, gophertype, location, title, desc)
+            gopher_text += u"<img src='/I/gophermedia/%s.png'> <a href='//%s:%s/%s%s'>%s</a> &lt;%s&gt;<br>\n" % (desc.lower(), host, port, gophertype, location, title, desc)
         elif gophertype == "h":
-            gopher_text += "<img src='/I/gophermedia/html.png'> <a href='//%s:%s/h%s'>%s</a> &lt;HTML&gt; <strong>(No sandbox)</strong><br>\n" % (host, port, location, title)
+            gopher_text += u"<img src='/I/gophermedia/html.png'> <a href='//%s:%s/h%s'>%s</a> &lt;HTML&gt; <strong>(No sandbox)</strong><br>\n" % (host, port, location, title)
         else:
-            gopher_text += "%s<br>\n" % line
+            gopher_text += u"%s<br>\n" % line
 
-    return "text/html; charset=UTF-8", """
+    return "text/html; charset=UTF-8", ("""
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
 Welcome to HTTP Gopher proxy!
 <hr>
@@ -57,4 +57,4 @@ Welcome to HTTP Gopher proxy!
 </pre>
 <hr>
 See you later!
-    """ % gopher_text
+    """ % gopher_text).encode("utf8")

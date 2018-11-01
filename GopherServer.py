@@ -5,6 +5,7 @@ import HTTPGopherProxy
 import logging
 import traceback
 import sys
+import urllib
 
 class GopherServer(object):
     def __init__(self, port):
@@ -38,6 +39,7 @@ class GopherServer(object):
                 # Valid gopher type
                 gopher_type = first_line[0]
                 first_line = first_line[1:]
+            first_line = urllib.unquote(first_line)
             is_http = True
         else:
             is_http = False
@@ -46,9 +48,9 @@ class GopherServer(object):
         # Handle data
         try:
             if is_http:
-                gen = self.handleRequestHTTP(first_line, ip, gopher_type)
+                gen = self.handleRequestHTTP(first_line.decode("utf8"), ip, gopher_type)
             else:
-                gen = self.handleRequestGopher(first_line, ip)
+                gen = self.handleRequestGopher(first_line.decode("utf8"), ip)
 
             for part in gen:
                 sock.send(part)
