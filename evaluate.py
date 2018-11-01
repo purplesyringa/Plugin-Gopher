@@ -308,7 +308,7 @@ def evaluate_code(expr, scope):
                 else:
                     # Fallthrough -- we handle this case below
                     pass
-            elif isinstance(token, Function) and token().startswith("("):
+            elif isinstance(token, Function) and token().startswith("f("):
                 lambda_balance += 1
             else:
                 # Save
@@ -399,8 +399,8 @@ def evaluate_code(expr, scope):
                             l = ListMark.get(stack)
                             stack.append(l)
                         # Lambdas
-                        elif token().startswith("("):
-                            arg_names = token()[1:-1].split(",")
+                        elif token().startswith("f("):
+                            arg_names = token()[2:-1].split(",")
                             if arg_names == [""]:
                                 arg_names = []
                             stack.append(LambdaMark(arg_names))
