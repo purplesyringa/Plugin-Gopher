@@ -10,6 +10,8 @@ def format(text, path, gopher_type, ip, port):
         parts = line[1:].split('\t')
 
         title = parts[0] if len(parts) >= 1 else ""
+        title = title.replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;").replace("<", "&lt;").replace(">", "&gt;")
+        
         location = parts[1] if len(parts) >= 2 else ""
         host = parts[2] if len(parts) >= 3 else ip
         port = parts[3] if len(parts) >= 4 else port
