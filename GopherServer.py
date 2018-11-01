@@ -1,7 +1,7 @@
 from gevent.server import StreamServer
 from GopherHandler import GopherHandler
-from HTTPGopherProxy import HTTPGopherProxy
 from gutil import ServeFile
+import HTTPGopherProxy
 import logging
 import traceback
 import sys
@@ -99,10 +99,10 @@ class GopherServer(object):
 
     def handleRequestHTTP(self, data, ip):
         try:
-            proxy = HTTPGopherProxy()
+            gopher_text = ""
             for part in self.formatGopher(data, ip):
-                proxy.append(part)
-            response = proxy.format()
+                gopher_text += part
+            response = HTTPGopherProxy.format(gopher_text)
             # Yield header
             yield "HTTP/1.1 200 OK\r\n"
             yield "Server: Gopher/ZeroNet\r\n"
