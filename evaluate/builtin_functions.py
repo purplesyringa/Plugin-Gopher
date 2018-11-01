@@ -14,7 +14,7 @@ def re_sub(gas_holder, s, p, r):
         return re.sub(p, r, s)
 def random_str(len):
     chars = string.ascii_lowercase + string.digits
-    return "".join(random.choice(chars) for _ in range(size))
+    return "".join(random.choice(chars) for _ in range(len))
 def setitem(v, i, a):
     v[i] = a
 def delitem(v, i):
