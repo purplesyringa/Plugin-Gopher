@@ -1,5 +1,6 @@
 def format(text, path, ip, port):
     from Config import config
+    import urllib
 
     zn_ui_port = config.ui_port
 
@@ -14,7 +15,7 @@ def format(text, path, ip, port):
         title = parts[0] if len(parts) >= 1 else u""
         title = title.replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("\\", "\\\\")
 
-        location = parts[1] if len(parts) >= 2 else ""
+        location = urllib.quote(parts[1]) if len(parts) >= 2 else ""
         host = parts[2] if len(parts) >= 3 else ip
         port = parts[3] if len(parts) >= 4 else port
 
