@@ -102,6 +102,7 @@ class GopherServer(object):
                 if buf == "":
                     break
                 yield buf
+            file.close()
 
 
     def handleRequestHTTP(self, path, ip, gopher_type):
@@ -125,36 +126,44 @@ class GopherServer(object):
                 content_type, response = "image/gif", gopher_text
             else:
                 content_type, response = HTTPGopherProxy.format(gopher_text, path, ip, self.port)
-            # Yield header
-            yield "HTTP/1.1 200 OK\r\n"
-            yield "Server: Gopher/ZeroNet\r\n"
-            yield "Content-Type: %s\r\n" % content_type
-            yield "Content-Length: %s\r\n" % len(response)
-            yield "Connection: Closed\r\n"
-            yield "\r\n"
-            # Yield body
-            yield response
         except ServeFile as e:
             # Get file
             file = e.getServedFile()
-            # Detect mime type
-            prefix = file.read(512)
-            mime_type = getContentType(e.getServedFilename(), prefix)
-            # Yield header
-            yield "HTTP/1.1 200 OK\r\n"
-            yield "Server: Gopher/ZeroNet\r\n"
-            yield "Content-Type: %s\r\n" % mime_type
-            yield "Content-Length: %s\r\n" % e.getServedFilesize()
-            yield "Connection: Closed\r\n"
-            yield "\r\n"
-            # Yield prefix
-            yield prefix
-            # Yield rest
-            while True:
-                buf = file.read(1024)
-                if buf == "":
-                    break
-                yield buf
+            if gopher_type == "1":
+                # In case the mode is 1, we *always* use proxy
+                content_type, response = HTTPGopherProxy.format(file.read(), path, ip, self.port)
+                file.close()
+            else:
+                # Detect mime type
+                prefix = file.read(512)
+                mime_type = getContentType(e.getServedFilename(), prefix)
+                # Yield header
+                yield "HTTP/1.1 200 OK\r\n"
+                yield "Server: Gopher/ZeroNet\r\n"
+                yield "Content-Type: %s\r\n" % mime_type
+                yield "Content-Length: %s\r\n" % e.getServedFilesize()
+                yield "Connection: Closed\r\n"
+                yield "\r\n"
+                # Yield prefix
+                yield prefix
+                # Yield rest
+                while True:
+                    buf = file.read(1024)
+                    if buf == "":
+                        break
+                    yield buf
+                file.close()
+                return
+
+        # Yield header
+        yield "HTTP/1.1 200 OK\r\n"
+        yield "Server: Gopher/ZeroNet\r\n"
+        yield "Content-Type: %s\r\n" % content_type
+        yield "Content-Length: %s\r\n" % len(response)
+        yield "Connection: Closed\r\n"
+        yield "\r\n"
+        # Yield body
+        yield response
 
 
     def formatGopher(self, data, ip):
