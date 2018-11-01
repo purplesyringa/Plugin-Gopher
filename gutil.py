@@ -42,7 +42,7 @@ def getReSafety(pattern):
     )
 
 
-def getContentType(self, file_name, prefix):
+def getContentType(file_name, prefix):
     if file_name.endswith(".css"):  # Force correct css content type
         return "text/css"
     content_type = mimetypes.guess_type(file_name)[0]

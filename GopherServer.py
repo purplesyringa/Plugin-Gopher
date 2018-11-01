@@ -1,6 +1,6 @@
 from gevent.server import StreamServer
 from GopherHandler import GopherHandler
-from gutil import ServeFile
+from gutil import ServeFile, getContentType
 import HTTPGopherProxy
 import logging
 import traceback
@@ -128,7 +128,7 @@ class GopherServer(object):
             yield "HTTP/1.1 200 OK\r\n"
             yield "Server: Gopher/ZeroNet\r\n"
             yield "Content-Type: %s\r\n" % mime_type
-            yield "Content-Length: %s\r\n" % len(e.getServedFilesize())
+            yield "Content-Length: %s\r\n" % e.getServedFilesize()
             yield "Connection: Closed\r\n"
             yield "\r\n"
             # Yield prefix
