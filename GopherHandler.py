@@ -10,28 +10,6 @@ import os
 import gevent
 
 
-@PluginManager.registerTo("UiRequest")
-class UiRequestPlugin(object):
-    # HTTP page that explains the Gopher plugin, what Gopher is, and how to use Gopher
-    def actionGopher(self):
-        from Ui import UiRequest
-
-        self.sendHeader()
-        yield "<h3>Gopher ZeroNet Plugin</h3>"
-        yield "<hr>"
-
-    # A Gopher HTTP Proxy / Web Client
-    def actionGopherClient(self):
-        from Ui import UiRequest
-
-        location = self.get["url"] if self.get.get("url") else "127.0.0.1:7070/1/" # TODO(Christian): Use correct ip and port
-
-        self.sendHeader()
-        yield "<h3>Gopher Web Client</h3>"
-        yield "<p>%s</p>" % location
-        yield "<hr>"
-
-
 @PluginManager.acceptPlugins
 class GopherHandler(object):
     def __init__(self, ip, port):
