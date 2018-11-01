@@ -67,7 +67,7 @@ class GopherServer(object):
             yield "i", e
             yield
             yield "1", "Return home", "/"
-        except:
+        except Exception:
             # Report exceptions as server errors
             e_type, value, tb = sys.exc_info()
 
