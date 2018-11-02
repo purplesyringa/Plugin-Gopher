@@ -346,30 +346,7 @@ class GopherHandler(object):
                     # Use each row as an individual line
                     self.gas_holder.needGas(5)
                     for row in site.storage.query(action["sql"], matches):
-                        row = list(row)
-
-                        # NOTE(Christian): Handle new lines in the Display Text of the row
-                        # All new lines after the first will use the text gophertype
-                        additionalRows = []
-
-                        if len(row) == 1:
-                            row = ["i"] + row
-                        text = row[1].replace("\r", "")
-                        location = row[2] if len(row) >= 3 else ""
-                        host = row[3] if len(row) >= 4 else ""
-                        port = row[4] if len(row) >= 5 else ""
-
-                        part_lines = text.split("\n")
-                        row[1] = part_lines[0]
-
-                        for line in part_lines[1:]:
-                            additionalRows.append(["i", line, location, host, port])
-
-                        # Yield the row and any additional rows due to new lines
                         yield row
-
-                        for additional_row in additionalRows:
-                            yield additional_row
                 elif "sql_foreach" in action:
                     self.gas_holder.needGas(7)
                     for row in site.storage.query(action["sql_foreach"], matches):

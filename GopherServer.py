@@ -190,10 +190,18 @@ class GopherServer(object):
             if len(line) < 5:
                 line += [ip, self.port]
 
+            # Yield the line and any additional lines due to new lines
+            # All new lines after the first will use the text gophertype
+            part_lines = line[1].split("\n")
+            line[1] = part_lines[0]
+            lines = [line]
+            for text in part_lines[1:]:
+                lines.append(["i", text] + line[2:])
+
             def encodeStr(s):
                 return unicode(s).encode("utf8", "ignore")
 
-            line = encodeStr(line[0]) + "\t".join(map(encodeStr, line[1:]))
-
-            yield line + "\r\n"
+            for line in lines:
+                line = encodeStr(line[0]) + "\t".join(map(encodeStr, line[1:]))
+                yield line + "\r\n"
         yield ".\r\n"
