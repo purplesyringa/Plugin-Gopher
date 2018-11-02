@@ -36,7 +36,21 @@ class GopherServer(object):
             if first_line.endswith(" HTTP/1.1"):
                 first_line = first_line[:-len(" HTTP/1.1")]
             first_line = first_line.lstrip("/")
-            if first_line and first_line[0] in "0123456789+:;<IMPTdghips":
+
+            # Handle gopher://host/gopher_type/selector format
+            if first_line.startswith("gopher://"):
+                path = first_line[len("gopher://"):]
+                # Get host/port
+                if "/" in path:
+                    host, path = path.split("/", 1)
+                else:
+                    host, path = path, ""
+                if path and path[0] in "0123456789+:;<IMPTdghips":
+                    # Valid gopher type
+                    gopher_type = path[0]
+                    path = path[1:]
+                first_line = "gopher://%s/%s" % (host, path)
+            elif first_line and first_line[0] in "0123456789+:;<IMPTdghips":
                 # Valid gopher type
                 gopher_type = first_line[0]
                 first_line = first_line[1:]
@@ -172,9 +186,9 @@ class GopherServer(object):
 
 
     def formatGopher(self, path, ip):
-        if path.lstrip("/").startswith("gopher://"):
+        if path.startswith("gopher://"):
             # Act like a proxy
-            path = path.lstrip("/")[len("gopher://"):]
+            path = path[len("gopher://"):]
             # Get host/port
             host, path = path.split("/", 1)
             if ":" in host:
