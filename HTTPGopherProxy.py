@@ -2,8 +2,6 @@ def format(text, path, ip, port):
     from Config import config
     import urllib
 
-    zn_ui_port = config.ui_port
-
     gopher_text = u""
 
     for line in text.decode("utf8").split("\r\n"):
