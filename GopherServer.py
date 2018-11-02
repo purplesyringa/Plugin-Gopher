@@ -1,6 +1,7 @@
 from gevent.server import StreamServer
 from GopherHandler import GopherHandler
 from gutil import ServeFile, getContentType
+from gevent import socket
 import HTTPGopherProxy
 import logging
 import traceback
@@ -170,8 +171,30 @@ class GopherServer(object):
         yield response
 
 
-    def formatGopher(self, data, ip):
-        for line in self.handleRequest(data, ip, self.port):
+    def formatGopher(self, path, ip):
+        if path.lstrip("/").startswith("gopher://"):
+            # Act like a proxy
+            path = path.lstrip("/")[len("gopher://"):]
+            # Get host/port
+            host, path = path.split("/", 1)
+            if ":" in host:
+                hostname, port = host.split(":")
+            else:
+                hostname, port = host, 70
+            # Connect and receive
+            sock = socket.socket()
+            sock.connect((hostname.encode("ascii"), int(port)))
+            sock.send("/" + path.lstrip("/").encode("utf8") + "\r\n")
+            while True:
+                data = sock.recv(1024)
+                if not data:
+                    break
+                yield data
+            sock.close()
+            return
+
+
+        for line in self.handleRequest(path, ip, self.port):
             if line is None:
                 line = []
             elif isinstance(line, tuple):
