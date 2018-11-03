@@ -346,7 +346,7 @@ class GopherHandler(object):
                     # Use each row as an individual line
                     self.gas_holder.needGas(5)
                     for row in site.storage.query(action["sql"], matches):
-                        yield row
+                        yield list(row)
                 elif "sql_foreach" in action:
                     self.gas_holder.needGas(7)
                     for row in site.storage.query(action["sql_foreach"], matches):
