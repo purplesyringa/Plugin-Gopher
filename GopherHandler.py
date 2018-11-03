@@ -126,7 +126,8 @@ class GopherHandler(object):
         yield
         yield "i", "Favorited sites"
         yield "i", "---------------"
-        zerohello_settings = self.getUser().sites[config.homepage].get("settings", {})
+        zerohello_settings = self.getUser().sites.get(config.homepage, {}).get("settings", {})
+        # zerohello_settings = self.getUser().sites[config.homepage].get("settings", {})
         favorites = zerohello_settings.get("favorite_sites", {}).keys()
         for address in sorted(favorites, key=lambda address: sites.get(address, "")):
             if address not in sites:
