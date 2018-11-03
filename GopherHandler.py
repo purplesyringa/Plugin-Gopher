@@ -374,6 +374,21 @@ class GopherHandler(object):
                 elif "do" in action:
                     self.gas_holder.needGas(1)
                     evaluateCode(action["do"], matches, self.gas_holder, no_result=True)
+                elif "if" in action:
+                    self.gas_holder.needGas(1)
+                    if evaluateCode(action["if"], matches, self.gas_holder):
+                        if isinstance(action["do"], list):
+                            for line in self.actionSiteRouter(site, matches, action["do"]):
+                                yield line
+                        else:
+                            evaluateCode(action["do"], matches, self.gas_holder, no_result=True)
+                    else:
+                        if "else" in action:
+                            if isinstance(action["do"], list):
+                                for line in self.actionSiteRouter(site, matches, action["else"]):
+                                    yield line
+                            else:
+                                evaluateCode(action["else"], matches, self.gas_holder, no_result=True)
 
 
     def actionSiteGophermap(self, address, path):
@@ -424,11 +439,13 @@ class GopherHandler(object):
         if "=" in value:
             return replaceVars(value["="])
         elif "= int" in value:
-            return replaceVars(int(value["= int"]))
+            return int(replaceVars(value["= int"]))
         elif "= float" in value:
-            return replaceVars(float(value["= float"]))
+            return float(replaceVars(value["= float"]))
         elif "= str" in value:
             return replaceVars(str(value["= str"]))
+        elif "= do" in value:
+            return evaluateCode(value["= do"], matches, self.gas_holder)
         elif any((key.startswith("= f(") for key in value.iterkeys())):
             for key in value.iterkeys():
                 if key.startswith("= f("):
