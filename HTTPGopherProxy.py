@@ -24,7 +24,7 @@ def format(text, path, ip, port):
             # Local
             host = parts[2] if len(parts) >= 3 else ip
             port = parts[3] if len(parts) >= 4 else port
-            location = gophertype + location
+            location = "/" + gophertype + location
 
         if gophertype == "i":
             gopher_text += u"%s<br>\n" % title
