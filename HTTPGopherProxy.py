@@ -36,7 +36,7 @@ def format(text, path, ip, port):
             else:
                 gopher_text += u"<img src='/I/gophermedia/dir.png'> <a href='%s'>%s/</a><br>\n" % (location, title)
         elif gophertype == "7":
-            gopher_text += u"<img src='/I/gophermedia/inp.png'> %s &lt;INP&gt;<br>\n" % title
+            gopher_text += u"<img src='/I/gophermedia/inp.png'> %s<br>\n" % title
             gopher_text += u"<form action='%s'>" % location
             gopher_text += u"<img src='/I/gophermedia/blank.png'>"
             gopher_text += u"<img src='/I/gophermedia/inp2.png'> "
