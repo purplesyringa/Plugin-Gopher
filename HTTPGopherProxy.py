@@ -73,6 +73,4 @@ Welcome to HTTP Gopher proxy!
 <pre>
 %s
 </pre>
-<hr>
-See you later!
     """ % gopher_text).encode("utf8")

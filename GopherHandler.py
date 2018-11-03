@@ -8,6 +8,7 @@ from Plugin import PluginManager
 import re
 import os
 import gevent
+import posixpath
 
 
 @PluginManager.acceptPlugins
@@ -83,7 +84,7 @@ class GopherHandler(object):
                         yield line
                     else:
                         # Show link to download page
-                        yield "1", line[1], "/" + os.path.join("download", gopher_type, fileaddress, filepath)
+                        yield "1", line[1], "/" + posixpath.join("download", gopher_type, fileaddress, filepath)
                 else:
                     yield line
 
@@ -233,7 +234,7 @@ class GopherHandler(object):
         files = []
 
         for filename in site.storage.list(path):
-            abspath = os.path.join(path, filename)
+            abspath = posixpath.join(path, filename)
             if site.storage.isDir(abspath):
                 # Directory
                 dirs.append(filename)
@@ -252,13 +253,13 @@ class GopherHandler(object):
 
         # First, show directories
         for filename in sorted(dirs):
-            abspath = os.path.join(path, filename)
+            abspath = posixpath.join(path, filename)
             yield "1", filename, "/%s/%s" % (address, abspath)
 
         # Now show files
         for filename in sorted(files):
             # HTML/text/binary
-            abspath = os.path.join(path, filename)
+            abspath = posixpath.join(path, filename)
             try:
                 with site.storage.open(abspath) as f:
                     prefix = f.read(512)
