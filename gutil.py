@@ -68,3 +68,10 @@ def getContentType(file_name, prefix):
         return "application/octet-stream"
     else:
         return "text/plain"
+
+
+def merge(*dicts):
+    result = {}
+    for dict in dicts:
+        result.update(dict)
+    return result

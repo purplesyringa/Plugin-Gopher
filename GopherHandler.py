@@ -1,7 +1,7 @@
 from Site import SiteManager
 from User import UserManager
 from Config import config
-from gutil import ServeFile, getReSafety, getContentType
+from gutil import ServeFile, getReSafety, getContentType, merge
 from evaluate import evaluate, evaluateCode, GopherFunction, GasHolder
 from footer import footer
 from Plugin import PluginManager
@@ -352,7 +352,7 @@ class GopherHandler(object):
                 elif "sql_foreach" in action:
                     self.gas_holder.needGas(7)
                     for row in site.storage.query(action["sql_foreach"], matches):
-                        for line in self.actionSiteRouter(site, dict(row), action["do"]):
+                        for line in self.actionSiteRouter(site, merge(matches, dict(row)), action["do"]):
                             yield line
                 elif "re_foreach" in action:
                     # List of actions -- search all matches and execute
@@ -366,7 +366,7 @@ class GopherHandler(object):
                             row_dict[str(i + 1)] = value
                         row_dict["0"] = row.group(0)
                         # Do
-                        for line in self.actionSiteRouter(site, row_dict, action["do"]):
+                        for line in self.actionSiteRouter(site, merge(matches, row_dict), action["do"]):
                             yield line
                 elif "var" in action:
                     self.gas_holder.needGas(1)
