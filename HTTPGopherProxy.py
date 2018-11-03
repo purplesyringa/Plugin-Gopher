@@ -15,7 +15,12 @@ def format(text, path, ip, port):
 
         location = urllib.quote(parts[1]) if len(parts) >= 2 else ""
 
-        if path.startswith("gopher://"):
+        is_web = False
+        if parts[1].startswith("URL:"):
+            # Clearnet
+            location = parts[1][len("URL:"):]
+            is_web = True
+        elif path.startswith("gopher://"):
             # Proxy
             host = parts[2] if len(parts) >= 3 else "(null.host)"
             port = parts[3] if len(parts) >= 4 else 70
@@ -30,11 +35,10 @@ def format(text, path, ip, port):
             gopher_text += u"%s<br>\n" % title
         elif gophertype == "3":
             gopher_text += u"<strong>ERR</strong> <em style='color: red'>%s</em><br>\n" % title
+        elif is_web:
+            gopher_text += u"<img src='/I/gophermedia/web.png'> <a href='%s'>%s</a> &lt;WEB&gt;<br>\n" % (location, title)
         elif gophertype == "1":
-            if location.startswith("URL%3A"):
-                gopher_text += u"<img src='/I/gophermedia/web.png'> <a href='%s'>%s</a> &lt;WEB&gt;<br>\n" % (location[4:], title)
-            else:
-                gopher_text += u"<img src='/I/gophermedia/dir.png'> <a href='%s'>%s/</a><br>\n" % (location, title)
+            gopher_text += u"<img src='/I/gophermedia/dir.png'> <a href='%s'>%s/</a><br>\n" % (location, title)
         elif gophertype == "7":
             gopher_text += u"<img src='/I/gophermedia/inp.png'> %s<br>\n" % title
             gopher_text += u"<form action='%s'>" % location
