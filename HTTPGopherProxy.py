@@ -116,7 +116,7 @@ def format(text, path_gopher_type, path, ip, port):
         inputParts = document.getElementById('input').value.split('/');
         output = "";
         for (var i = 0; i < inputParts.length - 1; i++) {
-            output += inputParts[i];
+            output += inputParts[i] + "/";
         }
         window.location.href = "/" + output;
     }
