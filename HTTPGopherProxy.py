@@ -46,14 +46,16 @@ def format(text, path, ip, port):
             gopher_text += u"<img src='/I/gophermedia/inp2.png'> "
             gopher_text += u"<input type='text' id='search_%s' name='search'>" % title.replace(" ", "_")
             gopher_text += u"</form>"
-        elif gophertype in "02456789gITs":
+        elif gophertype == "8":
+            gopher_text += u"<img src='/I/gophermedia/TLN.png'> <a href='telnet://%s'>%s</a> &lt;TLN&gt;<br>\n" % (location, title)
+        elif gophertype in "0245679gITs":
             desc = {
                 "0": "TXT",
                 "2": "CCSO",
                 "4": "HQC",
                 "5": "DOS",
                 "6": "UUE",
-                "8": "TLN",
+                #"8": "TLN",
                 "9": "BIN",
                 "g": "GIF",
                 "I": "IMG",
