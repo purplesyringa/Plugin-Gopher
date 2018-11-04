@@ -113,7 +113,7 @@ def format(text, path_gopher_type, path, ip, port):
     }
 
     function btn_up() {
-        inputParts = document.getElementById('input').value.split('/');
+        inputParts = document.getElementById('input').value.replace(/\/$/, "").split('/');
         output = "";
         for (var i = 0; i < inputParts.length - 1; i++) {
             output += inputParts[i] + "/";
