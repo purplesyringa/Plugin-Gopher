@@ -69,8 +69,10 @@ def format(text, path, ip, port):
             gopher_text += u"<img src='/I/gophermedia/%s.png'> <a href='%s'>%s</a> &lt;%s&gt;<br>\n" % (desc.lower(), location, title, desc)
         elif gophertype == "h":
             gopher_text += u"<img src='/I/gophermedia/html.png'> <a href='%s'>%s</a> &lt;HTML&gt; <strong>(No sandbox)</strong><br>\n" % (location, title)
+        elif gophertype in "pd;w": # Potential gophertypes - their meaning and use not yet confimed
+            gopher_text += u"<img src='/I/gophermedia/bin.png'> <a href='%s'>%s</a><br>\n" % (location, title)
         else:
-            gopher_text += u"<img src='/I/gophermedia/blank.png'> <a href='%s'>%s</a><br>\n" % (location, title)
+            gopher_text += u"%s<br>\n" % line
 
     return "text/html; charset=UTF-8", ("""
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
