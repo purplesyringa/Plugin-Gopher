@@ -72,7 +72,7 @@ def format(text, path, ip, port):
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
 Welcome to HTTP Gopher proxy!
 <hr>
-<pre>
+<div id="content">
 %s
-</pre>
-    """ % gopher_text).encode("utf8")
+</div>
+""" % gopher_text).encode("utf8")
