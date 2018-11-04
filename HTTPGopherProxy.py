@@ -24,12 +24,18 @@ def format(text, path, ip, port):
             # Proxy
             host = parts[2] if len(parts) >= 3 else "(null.host)"
             port = parts[3] if len(parts) >= 4 else 70
-            location = "/gopher://%s:%s/%s%s" % (host, port, gophertype, location)
+            if gophertype == "8":
+                location = "telnet://%s:%s/%s" % (host, port, gophertype)
+            else:
+                location = "/gopher://%s:%s/%s%s" % (host, port, gophertype, location)
         else:
             # Local
             host = parts[2] if len(parts) >= 3 else ip
             port = parts[3] if len(parts) >= 4 else port
-            location = "/" + gophertype + location
+            if gophertype == "8":
+                location = "telnet://%s:%s/%s" % (host, port, location)
+            else:
+                location = "/" + gophertype + location
 
         if gophertype == "i":
             gopher_text += u"%s<br>\n" % title
@@ -46,16 +52,14 @@ def format(text, path, ip, port):
             gopher_text += u"<img src='/I/gophermedia/inp2.png'> "
             gopher_text += u"<input type='text' id='search_%s' name='search'>" % title.replace(" ", "_")
             gopher_text += u"</form>"
-        elif gophertype == "8":
-            gopher_text += u"<img src='/I/gophermedia/TLN.png'> <a href='telnet://%s'>%s</a> &lt;TLN&gt;<br>\n" % (location.replace('gopher://', ''), title)
-        elif gophertype in "0245679gITs":
+        elif gophertype in "02456789gITs":
             desc = {
                 "0": "TXT",
                 "2": "CCSO",
                 "4": "HQC",
                 "5": "DOS",
                 "6": "UUE",
-                #"8": "TLN",
+                "8": "TLN",
                 "9": "BIN",
                 "g": "GIF",
                 "I": "IMG",
