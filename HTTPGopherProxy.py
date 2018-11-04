@@ -88,26 +88,36 @@ def format(text, path_gopher_type, path, ip, port):
     return "text/html; charset=UTF-8", ("""
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
 <div id="header">
-    Welcome to HTTP Gopher proxy!
-    <input type="text" placeholder="Gopher URL" id="url" value="%s" style="margin-left: 10px; width: 250px;" onkeypress="goto(event)">
-    <input type="text" placeholder="Veronica-2 Search" id="search" style="margin-left: 10px;" onkeypress="search(event)">
+    <div style="max-width: 1000px; margin: auto;">
+        <div style="display: inline-block; margin-top: calc(calc(25px - 16px) / 2);">
+            HTTP Proxy for ZeroNet Gopher
+        </div>
+        <div style="float: right;">
+            <input type="text" placeholder="Gopher URL" id="input" value="%s" style="margin-left: 10px; width: 250px;" onkeypress="keypress_goto(event)">
+            <button onclick="btn_goto()">Go</button>
+            <button onclick="btn_search()">V2 Search</button>
+        </div>
+        <div style="clear: both;"></div>
+    </div>
 </div>
 <div id="content">
 %s
 </div>
 <script>
-    function search(e) {
+    function keypress_goto(e) {
         if (e.keyCode === 13) {
             e.preventDefault();
-            window.location.href = "/gopher://gopher.floodgap.com:70/7/v2/vs?search=" + document.getElementById('search').value;
+            window.location.href = "/" + document.getElementById('input').value;
         }
     }
 
-    function goto(e) {
-        if (e.keyCode === 13) {
-            e.preventDefault();
-            window.location.href = "/" + document.getElementById('url').value;
-        }
+    function btn_goto() {
+        inputVal = document.getElementById('input').value;
+        window.location.href = "/" + inputVal;
+    }
+
+    function btn_search() {
+        window.location.href = "/gopher://gopher.floodgap.com:70/7/v2/vs?search=" + document.getElementById('input').value;
     }
 </script>
 """ % (path, gopher_text)).encode("utf8")
