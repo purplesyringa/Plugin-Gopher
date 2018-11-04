@@ -25,7 +25,7 @@ def format(text, path, ip, port):
             host = parts[2] if len(parts) >= 3 else "(null.host)"
             port = parts[3] if len(parts) >= 4 else 70
             if gophertype == "8":
-                location = "telnet://%s:%s/%s" % (host, port, gophertype)
+                location = "telnet://%s:%s/%s" % (host, port, location)
             else:
                 location = "/gopher://%s:%s/%s%s" % (host, port, gophertype, location)
         else:
