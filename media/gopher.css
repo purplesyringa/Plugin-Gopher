@@ -3,7 +3,7 @@ body {
     font-family: monospace;
     margin: 0;
 }
-img { vertical-align: middle; margin-top: -2px; margin-bottom: 2px; }
+img { vertical-align: middle; /*margin-top: -2px;*/ margin-bottom: 2px; }
 #content {
     max-width: 800px;
     margin: auto;
