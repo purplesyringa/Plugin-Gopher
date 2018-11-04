@@ -1,4 +1,4 @@
-def format(text, path_gopher_type, path, ip, port):
+def format(text, path_gopher_type, path, ip, path_port):
     from Config import config
     import urllib
 
@@ -45,6 +45,8 @@ def format(text, path_gopher_type, path, ip, port):
             port = parts[3] if len(parts) >= 4 else port
             if gophertype == "8":
                 location = "telnet://%s:%s/%s" % (host, port, location)
+            elif host != ip and host != "localhost" and port != path_port:
+                location = "/gopher://%s:%s/%s%s" % (host, port, gophertype, location)
             else:
                 location = "/" + gophertype + location
 
