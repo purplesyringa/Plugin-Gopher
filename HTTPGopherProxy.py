@@ -70,7 +70,7 @@ def format(text, path, ip, port):
         elif gophertype == "h":
             gopher_text += u"<img src='/I/gophermedia/html.png'> <a href='%s'>%s</a> &lt;HTML&gt; <strong>(No sandbox)</strong><br>\n" % (location, title)
         else:
-            gopher_text += u"%s<br>\n" % line
+            gopher_text += u"<a href='%s'>%s</a> &lt;UKN&gt;<br>\n" % (location, title)
 
     return "text/html; charset=UTF-8", ("""
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
