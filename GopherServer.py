@@ -144,13 +144,13 @@ class GopherServer(object):
             elif gopher_type == "g":
                 content_type, response = "image/gif", gopher_text
             else:
-                content_type, response = HTTPGopherProxy.format(gopher_text, path, ip, self.port)
+                content_type, response = HTTPGopherProxy.format(gopher_text, gopher_type, path, ip, self.port)
         except ServeFile as e:
             # Get file
             file = e.getServedFile()
             if gopher_type == "1":
                 # In case the mode is 1, we *always* use proxy
-                content_type, response = HTTPGopherProxy.format(file.read(), path, ip, self.port)
+                content_type, response = HTTPGopherProxy.format(file.read(), gopher_type, path, ip, self.port)
                 file.close()
             else:
                 # Detect mime type

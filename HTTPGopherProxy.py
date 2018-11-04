@@ -1,6 +1,17 @@
-def format(text, path, ip, port):
+def format(text, path_gopher_type, path, ip, port):
     from Config import config
     import urllib
+
+    # TODO(Christian): Kinda hacky. In _handle, the gophertype is removed from the path
+    # We need the gophertype from the path to implement an input that correctly displays
+    # the current path
+    if path.startswith("gopher://"):
+        path_parts = path.replace("gopher://", "").split("/", 2)
+        host = path_parts[0]
+        selector = path_parts[2] if len(path_parts) > 2 else path_parts[1]
+        path = "gopher://" + host + "/" + path_gopher_type + "/" + selector
+    else:
+        path = path_gopher_type + ("" if path.startswith("/") else "/") +  path
 
     gopher_text = u""
 
@@ -78,7 +89,7 @@ def format(text, path, ip, port):
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
 <div id="header">
     Welcome to HTTP Gopher proxy!
-    <input type="text" placeholder="Gopher URL" id="url" value="%s" style="margin-left: 10px;">
+    <input type="text" placeholder="Gopher URL" id="url" value="%s" style="margin-left: 10px; width: 250px;" onkeypress="goto(event)">
     <input type="text" placeholder="Veronica-2 Search" id="search" style="margin-left: 10px;" onkeypress="search(event)">
 </div>
 <div id="content">
@@ -89,6 +100,13 @@ def format(text, path, ip, port):
         if (e.keyCode === 13) {
             e.preventDefault();
             window.location.href = "/gopher://gopher.floodgap.com:70/7/v2/vs?search=" + document.getElementById('search').value;
+        }
+    }
+
+    function goto(e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            window.location.href = "/" + document.getElementById('url').value;
         }
     }
 </script>
