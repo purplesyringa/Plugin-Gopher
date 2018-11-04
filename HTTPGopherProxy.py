@@ -11,7 +11,7 @@ def format(text, path, ip, port):
         parts = line[1:].split('\t')
 
         title = parts[0] if len(parts) >= 1 else u""
-        title = title.replace("  ", "&nbsp;&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("\\", "\\\\")
+        title = title.replace(" ", "&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("\\", "\\\\")
 
         location = urllib.quote(parts[1]) if len(parts) >= 2 else ""
 
