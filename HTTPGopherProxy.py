@@ -70,8 +70,11 @@ def format(text, path, ip, port):
 
     return "text/html; charset=UTF-8", ("""
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
-Welcome to HTTP Gopher proxy!
-<hr>
+<div id="header">
+    Welcome to HTTP Gopher proxy!
+    <input type="text" placeholder="Gopher URL" style="margin-left: 10px;">
+    <input type="text" placeholder="Veronica-2 Search" style="margin-left: 10px;">
+</div>
 <div id="content">
 %s
 </div>
