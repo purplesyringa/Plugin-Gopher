@@ -1,18 +1,18 @@
 body {
     font-size: 14px;
     font-family: monospace;
+    margin: 0;
 }
 img { vertical-align: middle; margin-top: -2px; margin-bottom: 2px; }
 #content {
     max-width: 800px;
     margin: auto;
-    padding-left: 5px;
-    padding-right: 5px;
+    padding: 10px;
     border-left: 1px solid #AAA;
     border-right: 1px solid #AAA;
     word-wrap: normal;
 }
 #header {
-    border-bottom: 1px solid #AAA;
+    border-bottom: 1px solid #999;
     padding: 5px;
 }
