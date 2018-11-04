@@ -16,4 +16,8 @@ img { vertical-align: middle; /*margin-top: -2px;*/ margin-bottom: 2px; }
 #header {
     border-bottom: 1px solid #999;
     padding: 5px;
+    height: 34px;
+}
+#header button, #header input {
+    height: 100%;
 }

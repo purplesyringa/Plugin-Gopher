@@ -89,10 +89,11 @@ def format(text, path_gopher_type, path, ip, port):
 <link rel="stylesheet" type="text/css" href="/0/gophermedia/gopher.css"></link>
 <div id="header">
     <div style="max-width: 1000px; margin: auto;">
-        <div style="display: inline-block; margin-top: calc(calc(25px - 16px) / 2);">
+        <div style="display: inline-block; margin-top: calc(calc(34px - 16px) / 2);">
             HTTP Proxy for ZeroNet Gopher
         </div>
         <div style="float: right;">
+            <button onclick="btn_up()">Up</button>
             <input type="text" placeholder="Gopher URL" id="input" value="%s" style="margin-left: 10px; width: 250px;" onkeypress="keypress_goto(event)">
             <button onclick="btn_goto()">Go</button>
             <button onclick="btn_search()">V2 Search</button>
@@ -109,6 +110,10 @@ def format(text, path_gopher_type, path, ip, port):
             e.preventDefault();
             window.location.href = "/" + document.getElementById('input').value;
         }
+    }
+
+    function btn_up() {
+
     }
 
     function btn_goto() {
