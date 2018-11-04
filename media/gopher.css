@@ -8,6 +8,7 @@ img { vertical-align: middle; margin-top: -2px; margin-bottom: 2px; }
     max-width: 800px;
     margin: auto;
     padding: 10px;
+    padding-bottom: 20px;
     border-left: 1px solid #AAA;
     border-right: 1px solid #AAA;
     word-wrap: normal;

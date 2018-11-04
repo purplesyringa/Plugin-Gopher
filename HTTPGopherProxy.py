@@ -11,7 +11,7 @@ def format(text, path, ip, port):
         parts = line[1:].split('\t')
 
         title = parts[0] if len(parts) >= 1 else u""
-        title = title.replace(" ", "&nbsp;").replace("<", "&lt;").replace(">", "&gt;").replace("\\", "\\\\")
+        title = title.replace(" ", "&nbsp;").replace("<", "&lt;").replace(">", "&gt;")
 
         location = urllib.quote(parts[1]) if len(parts) >= 2 else ""
 
@@ -73,9 +73,17 @@ def format(text, path, ip, port):
 <div id="header">
     Welcome to HTTP Gopher proxy!
     <input type="text" placeholder="Gopher URL" id="url" value="%s" style="margin-left: 10px;">
-    <input type="text" placeholder="Veronica-2 Search" id="search" style="margin-left: 10px;">
+    <input type="text" placeholder="Veronica-2 Search" id="search" style="margin-left: 10px;" onkeypress="search(event)">
 </div>
 <div id="content">
 %s
 </div>
+<script>
+    function search(e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            window.location.href = "/gopher://gopher.floodgap.com:70/7/v2/vs?search=" + document.getElementById('search').value;
+        }
+    }
+</script>
 """ % (path, gopher_text)).encode("utf8")
